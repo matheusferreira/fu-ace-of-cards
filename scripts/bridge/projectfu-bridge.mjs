@@ -151,3 +151,44 @@ export async function removeProposalEffects(actors, moduleId, proposal) {
 		if (ids.length) await a.deleteEmbeddedDocuments('ActiveEffect', ids);
 	}
 }
+
+/* -------------------------------------------- */
+/*  Free attacks (Magic Pair, Duel Master)      */
+/* -------------------------------------------- */
+
+let armed = null;
+let checkConfig = null;
+
+/** Equipped weapons of an actor (projectfu equipment slots). */
+export function equippedWeapons(actor) {
+	return actor.items.filter((i) => i.type === 'weapon' && i.isEquipped);
+}
+
+export function weaponCategory(item) {
+	return item?.system?.category?.value ?? null;
+}
+
+/**
+ * Roll an accuracy check with a weapon through projectfu, overriding the damage type and adding a damage bonus.
+ * The override is applied in a late prepareCheck callback that only matches this actor and weapon.
+ */
+export async function freeAttack(actor, item, { type = null, bonus = 0, bonusLabel = '' } = {}) {
+	checkConfig ??= (await import(`${BASE}/checks/check-configuration.mjs`)).CheckConfiguration;
+	armed = { actorUuid: actor.uuid, itemId: item.id, type, bonus, bonusLabel };
+	try {
+		await item.system.roll({ shift: false, ctrl: false, alt: false, meta: false });
+	} finally {
+		armed = null;
+	}
+}
+
+Hooks.on('projectfu.prepareCheck', (check, actor, item, register) => {
+	if (!armed || check.type !== 'accuracy' || actor?.uuid !== armed.actorUuid || item?.id !== armed.itemId) return;
+	const a = armed;
+	armed = null;
+	register(async (chk) => {
+		const cfg = checkConfig.configure(chk);
+		if (a.type) cfg.setDamageType(a.type);
+		if (a.bonus) cfg.addDamageBonus(a.bonusLabel, a.bonus);
+	}, 1000);
+});

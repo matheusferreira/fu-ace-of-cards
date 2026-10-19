@@ -83,12 +83,13 @@
    "statusRemove": "Recover from: {list}",
    "statusInflict": "Suffer: {list}",
    "freeAttack": "Free attack with an equipped weapon; its damage becomes {type}.",
-   "duelMaster": "Duel Master: +{dmg} damage with arcane, dagger, firearm, sword or thrown weapons.",
+   "duelMaster": "Duel Master: +{dmg} damage on this attack",
    "highOrLowHeal": "High or Low: recover {amount} HP",
    "highOrLow": "High or Low until your next turn: +{dmg} damage dealt, −{red} damage taken",
    "forbiddenRite": "Forbidden Rite: {count} card(s) shuffled from the discard pile into the deck",
    "vanguardPlaced": "Card Vanguard: 1 card placed face down",
-   "resistance": "Resistance to {type} until the end of the turn"
+   "resistance": "Resistance to {type} until the end of the turn",
+   "freeAttackWith": "Free attack with {weapon}; its damage becomes {type}."
   },
   "Effect": {
    "none": "Cards cycled (no set)",
@@ -228,6 +229,12 @@
    "empty": "No vanguard cards in play. When you resolve Magic Cards, you can place one of the cards face down here.",
    "noMatch": "The revealed card does not match {type} damage; it goes to the discard pile with no effect.",
    "match": "Revealed card matches: you and every ally you can see gain Resistance to {type} until the end of the turn."
+  },
+  "Attack": {
+   "title": "Magic Pair: free attack",
+   "text": "Choose the equipped weapon for the free attack. The module rolls it with the chosen damage type.",
+   "skip": "Roll it myself",
+   "noWeapon": "No equipped weapon: roll the Magic Pair free attack from the sheet."
   }
  }
 }

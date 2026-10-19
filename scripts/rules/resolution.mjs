@@ -104,6 +104,7 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 	const drawn = Deck.handCards(actor).map((c) => c.id).filter((id) => !beforeHand.has(id));
 
 	const opts = ruleOptions(actor);
+	let freeAttack = null;
 	const jokerInDiscard = Deck.discardCards(actor).some((c) => c.getFlag(MODULE_ID, 'joker'));
 	const level = Deck.actorLevel(actor);
 	let title = L('Effect.none');
@@ -139,10 +140,16 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 			}
 			case 'freeAttack': {
 				const type = choices.type ?? fx.typeChoices[0];
-				let extra = '';
-				if (opts.duelMaster) extra = ' ' + L('Part.duelMaster', { dmg: fx.pairValue, mp: fx.pairValue * 2 });
-				parts.push({ kind: 'note', targets: [], label: L('Part.freeAttack', { type: game.i18n.localize(`FU.Damage${type.capitalize()}`) }) + extra });
-				if (opts.duelMaster) parts.push({ kind: 'recovery', resource: 'mp', amount: fx.pairValue * 2, targets: [actor], label: L('Part.recoverMP', { amount: fx.pairValue * 2 }) });
+				const weapon = await chooseWeapon(actor);
+				// Without a weapon chosen the GM checks the Category; with one, the module does.
+				const duel = !!(opts.duelMaster && (!weapon || DUEL_CATEGORIES.includes(Bridge.weaponCategory(weapon))));
+				freeAttack = weapon ? { weapon, type, bonus: duel ? fx.pairValue : 0 } : null;
+				const typeLabel = game.i18n.localize(`FU.Damage${type.capitalize()}`);
+				parts.push({ kind: 'note', targets: [], label: weapon ? L('Part.freeAttackWith', { weapon: weapon.name, type: typeLabel }) : L('Part.freeAttack', { type: typeLabel }) });
+				if (duel) {
+					parts.push({ kind: 'note', targets: [], label: L('Part.duelMaster', { dmg: fx.pairValue }) });
+					parts.push({ kind: 'recovery', resource: 'mp', amount: fx.pairValue * 2, targets: [actor], label: L('Part.recoverMP', { amount: fx.pairValue * 2 }) });
+				}
 				break;
 			}
 			default:
@@ -165,7 +172,7 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 	}
 
 	const cards = played.map((c) => ({ img: c.img, name: c.name }));
-	return createProposal({
+	const message = await createProposal({
 		actor,
 		title,
 		summary,
@@ -174,6 +181,8 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 		undo: { discarded: ids, drawn, mpSpent },
 		tags: ['magic-cards'],
 	});
+	if (freeAttack) await Bridge.freeAttack(actor, freeAttack.weapon, { type: freeAttack.type, bonus: freeAttack.bonus, bonusLabel: 'Duel Master' });
+	return message;
 }
 
 /**
@@ -251,4 +260,26 @@ export async function revealVanguard(actor, cardId, type) {
 		parts: [{ kind: 'resistance', type, targets: defaultAllies(actor), label: L('Part.resistance', { type: typeLabel }) }],
 		tags: ['card-vanguard'],
 	});
+}
+
+/** Duel Master works with these weapon Categories. */
+export const DUEL_CATEGORIES = ['arcane', 'dagger', 'firearm', 'sword', 'thrown'];
+
+/** Magic Pair: pick the equipped weapon for the free attack (null = roll it yourself later). */
+export async function chooseWeapon(actor) {
+	const weapons = Bridge.equippedWeapons(actor);
+	if (!weapons.length) {
+		ui.notifications.info(L('Attack.noWeapon'));
+		return null;
+	}
+	const buttons = weapons.map((w) => ({ action: w.id, label: w.name, icon: 'fa-solid fa-khanda', callback: () => w.id }));
+	buttons.push({ action: 'skip', label: game.i18n.localize('FUAOC.Attack.skip'), callback: () => null });
+	const id = await foundry.applications.api.DialogV2.wait({
+		window: { title: game.i18n.localize('FUAOC.Attack.title') },
+		classes: ['fuaoc', 'fuaoc-dialog'],
+		content: `<p>${game.i18n.localize('FUAOC.Attack.text')}</p>`,
+		buttons,
+		rejectClose: false,
+	});
+	return weapons.find((w) => w.id === id) ?? null;
 }

@@ -2,6 +2,12 @@
 
 All notable changes to this module. Each release on GitHub uses the section of its version as release notes.
 
+## [0.1.8] - 2026-10-19
+
+### Added
+- **Magic Pair free attack**: after resolving Magic Pair, a dialog lists your equipped weapons. Pick one and the module rolls the attack through projectfu with the damage type you chose for the set (or pick "Roll it myself" to do it from the sheet).
+- **Duel Master**: when the chosen weapon is arcane, dagger, firearm, sword or thrown, the attack gets + the pair's value as damage (shown as "Duel Master" in projectfu's damage breakdown) and the proposal recovers twice that value in MP. Other Categories get neither. If you roll the attack yourself, the bonus stays as a note and the MP part is kept for the GM to judge.
+
 ## [0.1.7] - 2026-10-19
 
 ### Added

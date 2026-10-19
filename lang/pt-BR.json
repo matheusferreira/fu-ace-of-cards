@@ -83,12 +83,13 @@
    "statusRemove": "Remove: {list}",
    "statusInflict": "Sofrem: {list}",
    "freeAttack": "Ataque livre com uma arma equipada; o dano vira {type}.",
-   "duelMaster": "Duel Master: +{dmg} de dano com arma arcane, dagger, firearm, sword ou thrown.",
+   "duelMaster": "Duel Master: +{dmg} de dano neste ataque",
    "highOrLowHeal": "High or Low: recupera {amount} PV",
    "highOrLow": "High or Low até seu próximo turno: +{dmg} de dano causado, −{red} de dano sofrido",
    "forbiddenRite": "Forbidden Rite: {count} carta(s) do descarte embaralhada(s) no baralho",
    "vanguardPlaced": "Card Vanguard: 1 carta virada para baixo",
-   "resistance": "Resistência a {type} até o fim do turno"
+   "resistance": "Resistência a {type} até o fim do turno",
+   "freeAttackWith": "Ataque grátis com {weapon}; o dano vira {type}."
   },
   "Effect": {
    "none": "Cartas trocadas (sem set)",
@@ -228,6 +229,12 @@
    "empty": "Nenhuma carta de vanguarda em jogo. Ao resolver Magic Cards, você pode deixar uma das cartas virada para baixo aqui.",
    "noMatch": "A carta revelada não corresponde ao dano de {type}; ela vai para o descarte sem efeito.",
    "match": "A carta revelada corresponde: você e todo aliado que você vê ganham Resistência a {type} até o fim do turno."
+  },
+  "Attack": {
+   "title": "Magic Pair: ataque grátis",
+   "text": "Escolha a arma equipada para o ataque grátis. O módulo rola o ataque com o tipo de dano escolhido.",
+   "skip": "Rolar pela ficha",
+   "noWeapon": "Nenhuma arma equipada: role o ataque grátis do Magic Pair pela ficha."
   }
  }
 }
