@@ -77,3 +77,5 @@
 .fuaoc .fuaoc-vcard { display: flex; flex-direction: column; gap: 4px; align-items: center; }
 .fuaoc .fuaoc-vcard img { width: 64px; filter: brightness(0.85); }
 .fuaoc .fuaoc-vcard button { min-height: 24px; font-size: 11px; padding: 2px 6px; }
+.fuaoc .fuaoc-status .fuaoc-don { flex: 0 0 auto; min-height: 24px; font-size: 12px; padding: 2px 8px; width: auto; }
+.fuaoc .fuaoc-don.armed { background: #c9a54a; color: #1d1a14; }

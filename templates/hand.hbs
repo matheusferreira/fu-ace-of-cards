@@ -8,6 +8,7 @@
 			<span class="fuaoc-pill"><i class="fa-solid fa-trash-can"></i> {{localize "FUAOC.Stack.discard"}}: <strong>{{discardCount}}</strong></span>
 			<span class="fuaoc-pill"><i class="fa-solid fa-droplet"></i> PM: <strong>{{mp}}</strong></span>
 			<span class="fuaoc-pill">Magic Cards SL {{sl}} · {{min}}–{{max}} {{localize "FUAOC.Hand.cards"}}</span>
+			{{#if doubleOrNothing}}<button type="button" class="fuaoc-don {{#if doubleOrNothing.armed}}armed{{/if}}" data-action="doubleOrNothing" data-tooltip="{{localize 'FUAOC.Double.hint'}}"><i class="fa-solid fa-dice"></i> Double or Nothing{{#if doubleOrNothing.armed}}: {{localize "FUAOC.Double.armed"}}{{/if}}</button>{{/if}}
 			{{#if discardTop}}<img class="fuaoc-discard-top" src="{{discardTop}}" alt="" data-tooltip="{{localize 'FUAOC.Hand.discardTop'}}">{{/if}}
 		</header>
 

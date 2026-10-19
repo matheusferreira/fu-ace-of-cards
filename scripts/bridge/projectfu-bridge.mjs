@@ -1,3 +1,4 @@
+import { doubleOrNothingValue } from '../rules/sets.mjs';
 /**
  * The only file that touches projectfu internals. Tested against projectfu 4.16.2.
  * Every call falls back to plain document updates if the system modules cannot be loaded.
@@ -192,3 +193,34 @@ Hooks.on('projectfu.prepareCheck', (check, actor, item, register) => {
 		if (a.bonus) cfg.addDamageBonus(a.bonusLabel, a.bonus);
 	}, 1000);
 });
+
+/* -------------------------------------------- */
+/*  Double or Nothing                           */
+/* -------------------------------------------- */
+
+
+let doubleNextRoll = null; // actor uuid whose next check roll is affected
+const CHECK_FORMULA = /^\d*d\d+\[\w+\] \+ \d*d\d+\[\w+\]/;
+
+/** Declared Double or Nothing: consume the actor flag when that actor prepares its next Check. */
+export function registerDoubleOrNothing(moduleId) {
+	Hooks.on('projectfu.prepareCheck', (check, actor) => {
+		if (!actor?.getFlag(moduleId, 'doubleOrNothing') || !actor.isOwner) return;
+		doubleNextRoll = actor.uuid;
+		actor.unsetFlag(moduleId, 'doubleOrNothing');
+	});
+	const original = foundry.dice.Roll.prototype.evaluate;
+	foundry.dice.Roll.prototype.evaluate = async function (...args) {
+		const result = await original.apply(this, args);
+		if (doubleNextRoll && CHECK_FORMULA.test(this.formula)) {
+			doubleNextRoll = null;
+			for (const term of [this.terms[0], this.terms[2]]) {
+				if (!(term instanceof foundry.dice.terms.DiceTerm)) continue;
+				for (const r of term.results) r.result = doubleOrNothingValue(r.result);
+			}
+			this._total = this._evaluateTotal();
+			this.options.fuaocDoubleOrNothing = true;
+		}
+		return result;
+	};
+}

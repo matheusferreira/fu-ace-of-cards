@@ -220,3 +220,8 @@ export function validateSwap(kind, cards, sl, action) {
 export function trapSpellBudget(sl) {
 	return sl * 5;
 }
+
+/** Double or Nothing: an even die counts double, any other die counts as 1. */
+export function doubleOrNothingValue(value) {
+	return value % 2 === 0 ? value * 2 : 1;
+}

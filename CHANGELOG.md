@@ -2,6 +2,11 @@
 
 All notable changes to this module. Each release on GitHub uses the section of its version as release notes.
 
+## [0.1.9] - 2026-10-19
+
+### Added
+- **Double or Nothing**: a button at the top of the hand window (only with the Skill) declares it and posts it in chat. Your next projectfu Check (attack, spell, attribute, opposed...) is adjusted automatically: each die showing an even number counts double, any other die counts as 1, and critical/fumble follow the adjusted dice. Click again before rolling to cancel.
+
 ## [0.1.8] - 2026-10-19
 
 ### Added

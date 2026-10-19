@@ -28,6 +28,7 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			mulligan: HandApp.#onMulligan,
 			trapCard: HandApp.#onTrapCard,
 			reveal: HandApp.#onReveal,
+			doubleOrNothing: HandApp.#onDoubleOrNothing,
 		},
 	};
 
@@ -74,7 +75,15 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		const actor = this.actor;
 		const stacks = Deck.getStacks(actor);
 		const sl = Deck.skillLevel(actor, FUID.magicCards);
-		const ctx = { actor, hasStacks: !!stacks, isGM: game.user.isGM, sl, max: maxCards(sl), min: MIN_CARDS };
+		const ctx = {
+			actor,
+			hasStacks: !!stacks,
+			isGM: game.user.isGM,
+			sl,
+			max: maxCards(sl),
+			min: MIN_CARDS,
+			doubleOrNothing: Deck.skillLevel(actor, FUID.doubleOrNothing) ? { armed: !!actor.getFlag(MODULE_ID, 'doubleOrNothing') } : null,
+		};
 		if (!stacks) return ctx;
 		const hand = Deck.handCards(actor);
 		this.selected = this.selected.filter((id) => hand.some((c) => c.id === id));
@@ -234,6 +243,19 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		const ids = [...this.selected];
 		this.selected = [];
 		await resolveSwap(this.actor, 'trapCard', ids, { action: this.trapAction });
+		this.render();
+	}
+
+	static async #onDoubleOrNothing() {
+		const armed = !!this.actor.getFlag(MODULE_ID, 'doubleOrNothing');
+		if (armed) await this.actor.unsetFlag(MODULE_ID, 'doubleOrNothing');
+		else {
+			await this.actor.setFlag(MODULE_ID, 'doubleOrNothing', true);
+			await ChatMessage.create({
+				speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+				content: `<div class="fuaoc-chat"><header><h3><i class="fa-solid fa-dice"></i> Double or Nothing</h3></header><p class="fuaoc-text">${game.i18n.localize('FUAOC.Double.declared')}</p></div>`,
+			});
+		}
 		this.render();
 	}
 

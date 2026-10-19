@@ -26,7 +26,7 @@ Put 30 images in your Foundry user data folder at `ace-of-cards-decks/<deck>/`, 
 
 ## Roadmap
 
-Double or Nothing helper; Rider-Waite tarot preset; per-card art editor.
+Rider-Waite tarot preset; per-card art editor.
 
 See [CHANGELOG.md](CHANGELOG.md) for what each version added.
 

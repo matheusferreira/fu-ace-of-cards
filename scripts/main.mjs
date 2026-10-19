@@ -13,6 +13,7 @@ const isResponsibleGM = () => game.user.isGM && game.users.activeGM?.id === game
 
 Hooks.once('init', () => {
 	registerSettings();
+	Bridge.registerDoubleOrNothing(MODULE_ID);
 	game.keybindings.register(MODULE_ID, 'openHand', {
 		name: 'FUAOC.Keybinding.openHand',
 		editable: [{ key: 'KeyH', modifiers: ['Shift'] }],

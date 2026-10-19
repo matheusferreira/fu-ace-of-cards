@@ -116,3 +116,8 @@ test('trap card: suit must match the enemy action, jokers always allowed', () =>
 	assert.equal(validateSwap('trapCard', [c(3, 'fire')], 1), 'trapAction');
 	assert.equal(trapSpellBudget(2), 10);
 });
+
+test('double or nothing: even dice double, others become 1', async () => {
+	const { doubleOrNothingValue } = await import('../scripts/rules/sets.mjs');
+	assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(doubleOrNothingValue), [1, 4, 1, 8, 1, 12, 1, 16, 1, 20, 1, 24]);
+});

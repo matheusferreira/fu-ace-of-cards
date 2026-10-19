@@ -235,6 +235,11 @@
    "text": "Escolha a arma equipada para o ataque grátis. O módulo rola o ataque com o tipo de dano escolhido.",
    "skip": "Rolar pela ficha",
    "noWeapon": "Nenhuma arma equipada: role o ataque grátis do Magic Pair pela ficha."
+  },
+  "Double": {
+   "hint": "Declare antes do seu próximo Teste: dados pares valem o dobro, os outros valem 1. Aplicado sozinho no seu próximo Teste do projectfu; clique de novo para cancelar.",
+   "armed": "declarado",
+   "declared": "Declarado para o próximo Teste: dados pares valem o dobro, os outros valem 1."
   }
  }
 }

@@ -235,6 +235,11 @@
    "text": "Choose the equipped weapon for the free attack. The module rolls it with the chosen damage type.",
    "skip": "Roll it myself",
    "noWeapon": "No equipped weapon: roll the Magic Pair free attack from the sheet."
+  },
+  "Double": {
+   "hint": "Declare before your next Check: even dice count double, other dice count as 1. Applied automatically to your next projectfu Check; click again to cancel.",
+   "armed": "declared",
+   "declared": "Declared for the next Check: even dice count double, other dice count as 1."
   }
  }
 }
