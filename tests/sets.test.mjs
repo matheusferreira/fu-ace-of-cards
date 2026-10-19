@@ -90,3 +90,29 @@ test('every 2..5 subset of a full deck resolves without throwing', () => {
 	}
 	assert.equal(checked, 400);
 });
+
+import { validateSwap, swapLimit, trapSpellBudget } from '../scripts/rules/sets.mjs';
+
+test('black & white adds light/dark to double trouble', () => {
+	const [opt] = findSets([c(2, 'fire'), c(2, 'ice'), c(5, 'fire'), c(5, 'air')]).filter((o) => o.effect === 'doubleTrouble');
+	assert.deepEqual(computeEffect(opt).typeChoices.sort(), ['air', 'fire', 'ice']);
+	assert.deepEqual(computeEffect(opt, { blackWhite: true }).typeChoices.slice(-2), ['light', 'dark']);
+});
+
+test('mulligan: up to SL + 1 cards, any suit', () => {
+	assert.equal(swapLimit(2), 3);
+	assert.equal(validateSwap('mulligan', [c(1), c(2, 'ice'), J()], 2), null);
+	assert.equal(validateSwap('mulligan', [c(1), c(2), c(3), c(4)], 2), 'swapCount');
+	assert.equal(validateSwap('mulligan', [], 2), 'swapCount');
+	assert.equal(validateSwap('mulligan', [c(1)], 0), 'noSkill');
+});
+
+test('trap card: suit must match the enemy action, jokers always allowed', () => {
+	assert.equal(validateSwap('trapCard', [c(3, 'ice'), J()], 1, 'attack'), null);
+	assert.equal(validateSwap('trapCard', [c(3, 'fire')], 1, 'attack'), 'trapSuit');
+	assert.equal(validateSwap('trapCard', [c(3, 'air')], 1, 'spell'), null);
+	assert.equal(validateSwap('trapCard', [c(3, 'earth')], 1, 'skill'), null);
+	assert.equal(validateSwap('trapCard', [c(3, 'fire')], 1, 'objective'), null);
+	assert.equal(validateSwap('trapCard', [c(3, 'fire')], 1), 'trapAction');
+	assert.equal(trapSpellBudget(2), 10);
+});

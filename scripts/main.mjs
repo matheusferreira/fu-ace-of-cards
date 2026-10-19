@@ -106,7 +106,14 @@ Hooks.on('deleteCombat', async (combat) => {
 Hooks.on('updateCombat', async (combat, changes) => {
 	if (!isResponsibleGM() || !('turn' in changes || 'round' in changes)) return;
 	const actor = combat.combatant?.actor;
-	if (actor) await Bridge.clearTemporaryEffects(actor, MODULE_ID);
+	if (!actor) return;
+	await Bridge.clearTemporaryEffects(actor, MODULE_ID);
+	// Trap Card can be used again from the start of the actor's next turn.
+	if (actor.getFlag(MODULE_ID, 'trapUsed')) await actor.unsetFlag(MODULE_ID, 'trapUsed');
+});
+Hooks.on('deleteCombat', async (combat) => {
+	if (!isResponsibleGM()) return;
+	for (const c of combat.combatants) if (c.actor?.getFlag(MODULE_ID, 'trapUsed')) await c.actor.unsetFlag(MODULE_ID, 'trapUsed');
 });
 
 /* Re-render windows when any of the module's card stacks change. */

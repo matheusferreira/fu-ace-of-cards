@@ -83,7 +83,8 @@
    "freeAttack": "Free attack with an equipped weapon; its damage becomes {type}.",
    "duelMaster": "Duel Master: +{dmg} damage with arcane, dagger, firearm, sword or thrown weapons.",
    "highOrLowHeal": "High or Low: recover {amount} HP",
-   "highOrLow": "High or Low until your next turn: +{dmg} damage dealt, −{red} damage taken"
+   "highOrLow": "High or Low until your next turn: +{dmg} damage dealt, −{red} damage taken",
+   "forbiddenRite": "Forbidden Rite: {count} card(s) shuffled from the discard pile into the deck"
   },
   "Effect": {
    "none": "Cards cycled (no set)",
@@ -134,7 +135,11 @@
    "noSkill": "This character does not have Magic Cards.",
    "cardCount": "Magic Cards resolves {min} to {max} cards at your Skill Level.",
    "noMP": "Not enough MP: {cost} needed, {mp} available.",
-   "chooseStatuses": "Choose exactly two status effects."
+   "chooseStatuses": "Choose exactly two status effects.",
+   "swapCount": "Pick 1 to {max} cards.",
+   "trapAction": "Choose the enemy action.",
+   "trapSuit": "Only jokers and {suit} cards can be discarded for this action.",
+   "trapUsed": "Trap Card was already used; it is available again at the start of your next turn."
   },
   "Notify": {
    "noGM": "A GM must be connected.",
@@ -180,6 +185,26 @@
     "name": "Automatic conflict setup",
     "hint": "Shuffle and draw 5 when combat starts; recall all cards when it ends."
    }
+  },
+  "Swap": {
+   "heading": "Other card Skills",
+   "mulliganHint": "After you hit with an attack on your turn: discard up to {max} cards and draw that many.",
+   "trapHint": "After an enemy you can see resolves an action: discard up to {max} matching cards or jokers, draw that many, then cast a spell for free.",
+   "after": "after enemy",
+   "drew": "Discarded and drew {count} card(s).",
+   "trapSpell": "Trap Card (enemy {action}): you may now perform the Spell action for free, casting spells with a total MP cost of up to {mp} (you still pay the MP)."
+  },
+  "Action": {
+   "attack": "Attack",
+   "objective": "Objective",
+   "skill": "Skill",
+   "spell": "Spell"
+  },
+  "Rite": {
+   "title": "Forbidden Rite",
+   "text": "You discarded a joker. Choose any non-joker cards in your discard pile to shuffle into your deck.",
+   "confirm": "Shuffle into deck",
+   "skip": "Skip"
   }
  }
 }

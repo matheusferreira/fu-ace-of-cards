@@ -136,7 +136,7 @@ export function levelBonus(level) {
  * @param {object} option   an entry returned by findSets
  * @param {{level:number}} ctx
  */
-export function computeEffect(option, { level = 5 } = {}) {
+export function computeEffect(option, { level = 5, blackWhite = false } = {}) {
 	const r = option.resolved;
 	const values = r.map((c) => c.value);
 	const total = values.reduce((a, b) => a + b, 0);
@@ -156,7 +156,7 @@ export function computeEffect(option, { level = 5 } = {}) {
 		case 'tripleSupport':
 			return { kind: 'recovery', target: 'allies', hp: total * 3, mp: 0 };
 		case 'doubleTrouble':
-			return { kind: 'damage', target: 'upToTwoEnemies', amount: 10 + highest + bonus, typeChoices: [...new Set(r.map((c) => c.suit))] };
+			return { kind: 'damage', target: 'upToTwoEnemies', amount: 10 + highest + bonus, typeChoices: [...new Set(r.map((c) => c.suit)), ...(blackWhite ? ['light', 'dark'] : [])] };
 		case 'magicPair':
 			return { kind: 'freeAttack', typeChoices: [...new Set(r.map((c) => c.suit))], pairValue: values[0] };
 		default:
@@ -191,3 +191,32 @@ export function mpCost(cardCount) {
 
 /** Trap Card: suits allowed per enemy action. */
 export const TRAP_SUIT = { attack: 'ice', objective: 'fire', skill: 'earth', spell: 'air' };
+
+/** Mulligan and Trap Card: discard up to SL + 1 cards and draw that many. */
+export function swapLimit(sl) {
+	return sl > 0 ? sl + 1 : 0;
+}
+
+/**
+ * Validate a Mulligan / Trap Card discard.
+ * @param {'mulligan'|'trapCard'} kind
+ * @param {{joker:boolean, suit:string|null}[]} cards  rule cards
+ * @param {number} sl                                  skill level of that skill
+ * @param {string} [action]                            Trap Card: attack | objective | skill | spell
+ * @returns {string|null} error key under FUAOC.Error, or null when valid
+ */
+export function validateSwap(kind, cards, sl, action) {
+	if (!sl) return 'noSkill';
+	if (!cards.length || cards.length > swapLimit(sl)) return 'swapCount';
+	if (kind === 'trapCard') {
+		const suit = TRAP_SUIT[action];
+		if (!suit) return 'trapAction';
+		if (!cards.every((c) => c.joker || c.suit === suit)) return 'trapSuit';
+	}
+	return null;
+}
+
+/** Highest total MP cost of the free spell granted by Trap Card. */
+export function trapSpellBudget(sl) {
+	return sl * 5;
+}

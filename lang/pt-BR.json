@@ -83,7 +83,8 @@
    "freeAttack": "Ataque livre com uma arma equipada; o dano vira {type}.",
    "duelMaster": "Duel Master: +{dmg} de dano com arma arcane, dagger, firearm, sword ou thrown.",
    "highOrLowHeal": "High or Low: recupera {amount} PV",
-   "highOrLow": "High or Low até seu próximo turno: +{dmg} de dano causado, −{red} de dano sofrido"
+   "highOrLow": "High or Low até seu próximo turno: +{dmg} de dano causado, −{red} de dano sofrido",
+   "forbiddenRite": "Forbidden Rite: {count} carta(s) do descarte embaralhada(s) no baralho"
   },
   "Effect": {
    "none": "Cartas trocadas (sem set)",
@@ -134,7 +135,11 @@
    "noSkill": "Este personagem não tem Magic Cards.",
    "cardCount": "Magic Cards resolve de {min} a {max} cartas no seu SL.",
    "noMP": "PM insuficiente: precisa de {cost}, tem {mp}.",
-   "chooseStatuses": "Escolha exatamente dois status."
+   "chooseStatuses": "Escolha exatamente dois status.",
+   "swapCount": "Escolha de 1 a {max} cartas.",
+   "trapAction": "Escolha a ação do inimigo.",
+   "trapSuit": "Só jokers e cartas de {suit} podem ser descartados para essa ação.",
+   "trapUsed": "Trap Card já foi usado; volta a ficar disponível no início do seu próximo turno."
   },
   "Notify": {
    "noGM": "É preciso um mestre conectado.",
@@ -180,6 +185,26 @@
     "name": "Preparar conflito automaticamente",
     "hint": "Embaralhar e comprar 5 quando o combate começa; recolher tudo quando termina."
    }
+  },
+  "Swap": {
+   "heading": "Outras Skills de cartas",
+   "mulliganHint": "Depois de acertar um ataque no seu turno: descarte até {max} cartas e compre o mesmo número.",
+   "trapHint": "Depois que um inimigo que você vê resolve uma ação: descarte até {max} cartas do naipe correspondente ou jokers, compre o mesmo número e conjure uma magia de graça.",
+   "after": "após inimigo usar",
+   "drew": "Descartou e comprou {count} carta(s).",
+   "trapSpell": "Trap Card ({action} inimigo): você pode realizar a ação Magia de graça, conjurando magias com custo total de até {mp} PM (o PM ainda é pago)."
+  },
+  "Action": {
+   "attack": "Ataque",
+   "objective": "Objetivo",
+   "skill": "Skill",
+   "spell": "Magia"
+  },
+  "Rite": {
+   "title": "Forbidden Rite",
+   "text": "Você descartou um joker. Escolha cartas que não sejam joker no seu descarte para embaralhar de volta no baralho.",
+   "confirm": "Embaralhar no baralho",
+   "skip": "Pular"
   }
  }
 }

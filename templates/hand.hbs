@@ -54,6 +54,24 @@
 				{{else}}
 					{{#if showNoSet}}<p class="fuaoc-hint">{{localize "FUAOC.Hand.noSet"}}</p>{{/if}}
 				{{/if}}
+				{{#if swap}}
+					<div class="fuaoc-swap">
+						<h4>{{localize "FUAOC.Swap.heading"}}</h4>
+						{{#if swap.mulligan}}
+							<div class="fuaoc-field">
+								<button type="button" data-action="mulligan" {{#if swap.mulligan.error}}disabled{{/if}} data-tooltip="{{localize 'FUAOC.Swap.mulliganHint' max=swap.mulligan.max}}"><i class="fa-solid fa-arrows-rotate"></i> Mulligan</button>
+								{{#if swap.mulligan.error}}<span class="fuaoc-hint">{{swap.mulligan.error}}</span>{{/if}}
+							</div>
+						{{/if}}
+						{{#if swap.trap}}
+							<div class="fuaoc-field">
+								<button type="button" data-action="trapCard" {{#if swap.trap.error}}disabled{{/if}} data-tooltip="{{localize 'FUAOC.Swap.trapHint' max=swap.trap.max}}"><i class="fa-solid fa-bolt"></i> Trap Card</button>
+								<label>{{localize "FUAOC.Swap.after"}} <select name="trapAction">{{#each swap.trap.actions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+								{{#if swap.trap.error}}<span class="fuaoc-hint">{{swap.trap.error}}</span>{{/if}}
+							</div>
+						{{/if}}
+					</div>
+				{{/if}}
 				<footer class="fuaoc-actions">
 					<button type="button" data-action="clear"><i class="fa-solid fa-xmark"></i> {{localize "FUAOC.Hand.clear"}}</button>
 					<button type="button" data-action="resolve" {{#unless canResolve}}disabled{{/unless}}><i class="fa-solid fa-wand-sparkles"></i> {{localize "FUAOC.Hand.resolve"}}</button>

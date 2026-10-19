@@ -1,5 +1,5 @@
 import { FUID, MODULE_ID } from '../constants.mjs';
-import { findSets, computeEffect, highOrLow, maxCards, MIN_CARDS, mpCost } from './sets.mjs';
+import { findSets, computeEffect, highOrLow, maxCards, MIN_CARDS, mpCost, validateSwap, swapLimit, trapSpellBudget, TRAP_SUIT } from './sets.mjs';
 import * as Deck from '../deck/deck-manager.mjs';
 import * as Bridge from '../bridge/projectfu-bridge.mjs';
 import { modeFor } from '../settings.mjs';
@@ -43,6 +43,31 @@ export function validate(actor, ids) {
 }
 
 /**
+ * Forbidden Rite: after discarding a joker with Magic Cards, pick non-joker cards in the discard pile
+ * to shuffle back into the deck.
+ * @returns {Promise<string[]>} ids shuffled in
+ */
+export async function forbiddenRiteStep(actor) {
+	const pool = Deck.discardCards(actor).filter((c) => !c.getFlag(MODULE_ID, 'joker'));
+	if (!pool.length) return [];
+	const items = pool
+		.map((c) => `<label class="fuaoc-pick"><input type="checkbox" name="card" value="${c.id}"><img src="${c.img}" alt="" data-tooltip="${c.name}"></label>`)
+		.join('');
+	const ids = await foundry.applications.api.DialogV2.wait({
+		window: { title: game.i18n.localize('FUAOC.Rite.title') },
+		classes: ['fuaoc', 'fuaoc-dialog'],
+		content: `<p>${game.i18n.localize('FUAOC.Rite.text')}</p><div class="fuaoc-picks">${items}</div>`,
+		buttons: [
+			{ action: 'ok', label: game.i18n.localize('FUAOC.Rite.confirm'), icon: 'fa-solid fa-shuffle', default: true, callback: (ev, button) => [...button.form.querySelectorAll('input[name=card]:checked')].map((i) => i.value) },
+			{ action: 'skip', label: game.i18n.localize('FUAOC.Rite.skip'), callback: () => [] },
+		],
+		rejectClose: false,
+	});
+	if (!Array.isArray(ids) || !ids.length) return [];
+	return Deck.shuffleIntoDeck(actor, ids);
+}
+
+/**
  * Resolve Magic Cards: pay MP, discard the set, draw the same number, post the proposal.
  * @param {Actor} actor
  * @param {string[]} ids        selected hand card ids, in the order chosen
@@ -70,6 +95,8 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 
 	const beforeHand = new Set(Deck.handCards(actor).map((c) => c.id));
 	await Deck.discardFromHand(actor, ids);
+	const rite = ruleCards.some((c) => c.joker) && Deck.hasHeroic(actor, FUID.forbiddenRite) ? await forbiddenRiteStep(actor) : [];
+	if (rite.length) parts.push({ kind: 'note', targets: [], label: L('Part.forbiddenRite', { count: rite.length }) });
 	await Deck.drawCards(actor, ids.length);
 	const drawn = Deck.handCards(actor).map((c) => c.id).filter((id) => !beforeHand.has(id));
 
@@ -79,7 +106,7 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 	let title = L('Effect.none');
 	let summary = '';
 	if (option) {
-		const fx = computeEffect(option, { level });
+		const fx = computeEffect(option, { level, blackWhite: opts.blackWhite });
 		title = effectLabel(option);
 		summary = game.i18n.localize(`FUAOC.Effect.${option.effect}.text`);
 		const ignore = (option.effect === 'forbiddenMonarch' && jokerInDiscard) || (opts.blackWhite && jokerInDiscard && ['blindingFlush', 'doubleTrouble', 'magicFlush'].includes(option.effect));
@@ -143,5 +170,45 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 		parts,
 		undo: { discarded: ids, drawn, mpSpent },
 		tags: ['magic-cards'],
+	});
+}
+
+/**
+ * Mulligan / Trap Card: discard up to SL + 1 cards, draw that many, and log it in chat.
+ * @param {'mulligan'|'trapCard'} kind
+ * @param {string[]} ids
+ * @param {{action?: string}} choices  Trap Card: the enemy action (attack | objective | skill | spell)
+ */
+export function swapError(actor, kind, ids, choices = {}) {
+	const hand = Deck.handCards(actor);
+	const cards = ids.map((id) => hand.find((c) => c.id === id)).filter(Boolean).map(Deck.toRuleCard);
+	const sl = Deck.skillLevel(actor, kind === 'trapCard' ? FUID.trapCard : FUID.mulligan);
+	if (sl && kind === 'trapCard' && actor.getFlag(MODULE_ID, 'trapUsed')) return L('Error.trapUsed');
+	const err = validateSwap(kind, cards, sl, choices.action);
+	if (err) return L(`Error.${err}`, { max: swapLimit(sl), suit: game.i18n.localize(`FU.Damage${(TRAP_SUIT[choices.action] ?? '').capitalize()}`) });
+	return null;
+}
+
+export async function resolveSwap(actor, kind, ids, choices = {}) {
+	const err = swapError(actor, kind, ids, choices);
+	if (err) {
+		ui.notifications.warn(err);
+		return null;
+	}
+	const hand = Deck.handCards(actor);
+	const played = ids.map((id) => hand.find((c) => c.id === id));
+	await Deck.discardFromHand(actor, ids);
+	const drawn = await Deck.drawCards(actor, ids.length);
+	const sl = Deck.skillLevel(actor, kind === 'trapCard' ? FUID.trapCard : FUID.mulligan);
+	let text = L('Swap.drew', { count: drawn });
+	if (kind === 'trapCard') {
+		await actor.setFlag(MODULE_ID, 'trapUsed', true);
+		text += ' ' + L('Swap.trapSpell', { mp: trapSpellBudget(sl), action: game.i18n.localize(`FUAOC.Action.${choices.action}`) });
+	}
+	const title = kind === 'trapCard' ? 'Trap Card' : 'Mulligan';
+	const cardsHtml = played.map((c) => `<li><img src="${c.img}" alt="" data-tooltip="${c.name}"></li>`).join('');
+	return ChatMessage.create({
+		speaker: ChatMessage.getSpeaker({ actor }),
+		content: `<div class="fuaoc-chat"><header><h3><i class="fa-solid fa-diamond"></i> ${title}</h3></header><ol class="fuaoc-mini">${cardsHtml}</ol><p class="fuaoc-text">${text}</p></div>`,
 	});
 }

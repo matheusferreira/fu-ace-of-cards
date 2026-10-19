@@ -1,7 +1,8 @@
 import { MODULE_ID, TEMPLATES, FUID } from '../constants.mjs';
 import * as Deck from '../deck/deck-manager.mjs';
 import { maxCards, MIN_CARDS, mpCost, computeEffect } from '../rules/sets.mjs';
-import { optionsFor, effectLabel, resolveMagicCards, validate } from '../rules/resolution.mjs';
+import { optionsFor, effectLabel, resolveMagicCards, validate, resolveSwap, swapError } from '../rules/resolution.mjs';
+import { swapLimit } from '../rules/sets.mjs';
 import { requestGM } from '../socket.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -24,6 +25,8 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			clear: HandApp.#onClear,
 			createDeck: HandApp.#onCreateDeck,
 			setup: HandApp.#onSetup,
+			mulligan: HandApp.#onMulligan,
+			trapCard: HandApp.#onTrapCard,
 		},
 	};
 
@@ -52,6 +55,7 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.optionKey = null;
 		this.choiceType = null;
 		this.statuses = [];
+		this.trapAction = 'attack';
 	}
 
 	get title() {
@@ -74,7 +78,7 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		const options = this.selected.length >= MIN_CARDS ? optionsFor(actor, this.selected) : [];
 		if (!options.some((o) => `${o.effect}:${o.variant}` === this.optionKey)) this.optionKey = options[0] ? `${options[0].effect}:${options[0].variant}` : null;
 		const chosen = options.find((o) => `${o.effect}:${o.variant}` === this.optionKey) ?? null;
-		const fx = chosen ? computeEffect(chosen, { level: Deck.actorLevel(actor) }) : null;
+		const fx = chosen ? computeEffect(chosen, { level: Deck.actorLevel(actor), blackWhite: Deck.hasHeroic(actor, FUID.blackWhite) }) : null;
 		const typeChoices = fx?.typeChoices ?? [];
 		if (typeChoices.length && !typeChoices.includes(this.choiceType)) this.choiceType = typeChoices[0];
 		const discard = Deck.discardCards(actor);
@@ -104,11 +108,38 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			statuses: STATUSES.map((s) => ({ value: s, label: game.i18n.localize(`FU.${s.capitalize()}`), checked: this.statuses.includes(s) })),
 			canResolve: this.selected.length >= MIN_CARDS && !validate(actor, this.selected),
 			showNoSet: this.selected.length >= MIN_CARDS && !options.length,
+			swap: this.#swapContext(),
+		};
+	}
+
+	#swapContext() {
+		const actor = this.actor;
+		const mulliganSL = Deck.skillLevel(actor, FUID.mulligan);
+		const trapSL = Deck.skillLevel(actor, FUID.trapCard);
+		if (!mulliganSL && !trapSL) return null;
+		const n = this.selected.length;
+		return {
+			mulligan: mulliganSL ? { max: swapLimit(mulliganSL), error: n ? swapError(actor, 'mulligan', this.selected) : null } : null,
+			trap: trapSL
+				? {
+						max: swapLimit(trapSL),
+						used: !!actor.getFlag(MODULE_ID, 'trapUsed'),
+						error: n ? swapError(actor, 'trapCard', this.selected, { action: this.trapAction }) : null,
+						actions: ['attack', 'objective', 'skill', 'spell'].map((a) => ({ value: a, label: game.i18n.localize(`FUAOC.Action.${a}`), selected: a === this.trapAction })),
+					}
+				: null,
+			disabled: !n,
 		};
 	}
 
 	_onRender(context, options) {
 		super._onRender(context, options);
+		this.element.querySelectorAll('select[name=trapAction]').forEach((el) =>
+			el.addEventListener('change', (ev) => {
+				this.trapAction = ev.target.value;
+				this.render();
+			}),
+		);
 		this.element.querySelectorAll('select[name=type]').forEach((el) =>
 			el.addEventListener('change', (ev) => {
 				this.choiceType = ev.target.value;
@@ -158,6 +189,20 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.selected = [];
 		await resolveMagicCards(this.actor, ids, chosen, { type: this.choiceType, statuses: this.statuses });
 		this.statuses = [];
+		this.render();
+	}
+
+	static async #onMulligan() {
+		const ids = [...this.selected];
+		this.selected = [];
+		await resolveSwap(this.actor, 'mulligan', ids);
+		this.render();
+	}
+
+	static async #onTrapCard() {
+		const ids = [...this.selected];
+		this.selected = [];
+		await resolveSwap(this.actor, 'trapCard', ids, { action: this.trapAction });
 		this.render();
 	}
 

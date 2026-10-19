@@ -202,6 +202,26 @@ export async function returnToDeck(actor, cardIds) {
 	await s.hand.pass(s.deck, cardIds, QUIET);
 }
 
+/** Forbidden Rite: shuffle chosen cards from the discard pile into the deck. */
+export async function shuffleIntoDeck(actor, cardIds) {
+	const s = getStacks(actor);
+	const ids = cardIds.filter((id) => s?.discard.cards.has(id));
+	if (!ids.length) return [];
+	await s.discard.pass(s.deck, ids, QUIET);
+	await s.deck.shuffle(QUIET);
+	return ids;
+}
+
+/** Undo helper: bring cards back to the hand from the discard pile or, if they were shuffled in, from the deck. */
+export async function reclaimToHand(actor, cardIds) {
+	const s = getStacks(actor);
+	if (!s || !cardIds.length) return;
+	const fromDiscard = cardIds.filter((id) => s.discard.cards.has(id));
+	const fromDeck = cardIds.filter((id) => s.deck.cards.has(id));
+	if (fromDiscard.length) await s.discard.pass(s.hand, fromDiscard, { updateData: { face: 0 }, ...QUIET });
+	if (fromDeck.length) await s.deck.pass(s.hand, fromDeck, { updateData: { face: 0 }, ...QUIET });
+}
+
 /** Start of a conflict: recall everything, shuffle, draw the starting hand. */
 export async function setupConflict(actor) {
 	const s = getStacks(actor);

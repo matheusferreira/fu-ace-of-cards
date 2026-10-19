@@ -170,7 +170,7 @@ export async function rejectProposal(messageId) {
 	const actor = await fromUuid(data.actorUuid);
 	if (data.undo && actor) {
 		if (data.undo.drawn?.length) await Deck.returnToDeck(actor, data.undo.drawn.filter((id) => Deck.getStacks(actor)?.hand.cards.has(id)));
-		if (data.undo.discarded?.length) await Deck.returnToHand(actor, data.undo.discarded.filter((id) => Deck.getStacks(actor)?.discard.cards.has(id)));
+		if (data.undo.discarded?.length) await Deck.reclaimToHand(actor, data.undo.discarded);
 		if (data.undo.mpSpent) await Bridge.recover(actor, [actor], 'mp', data.undo.mpSpent, { name: data.title });
 	}
 	await updateMessage(message, { status: 'rejected' });
