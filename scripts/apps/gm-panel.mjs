@@ -25,6 +25,7 @@ export class GMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 			shuffle: GMPanel.#act('shuffle'),
 			openHand: GMPanel.#act('openHand'),
 			toggleMode: GMPanel.#toggleMode,
+			setHand: GMPanel.#setHand,
 		},
 	};
 
@@ -127,6 +128,40 @@ export class GMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 			}
 			this.render();
 		};
+	}
+
+	/** Testing tool: pick the exact cards in an actor's hand, without RNG. */
+	static async #setHand(event, target) {
+		const actor = game.actors.get(target.closest('[data-actor-id]')?.dataset.actorId);
+		if (!actor || !Deck.getStacks(actor)) return;
+		const L = (k) => game.i18n.localize(`FUAOC.SetHand.${k}`);
+		const cards = Deck.allCards(actor);
+		const items = cards
+			.map(
+				(c) => `<label class="fuaoc-pick loc-${c.location}" data-tooltip="${c.name} · ${L(c.location)}">
+					<input type="checkbox" name="card" value="${c.id}" ${c.location === 'hand' ? 'checked' : ''}>
+					<img src="${c.img}" alt=""><span class="fuaoc-cname">${c.name}</span><span class="fuaoc-loc">${L(c.location)}</span></label>`,
+			)
+			.join('');
+		const ids = await foundry.applications.api.DialogV2.wait({
+			window: { title: `${L('title')} — ${actor.name}`, resizable: true },
+			position: { width: 760 },
+			classes: ['fuaoc', 'fuaoc-dialog', 'fuaoc-sethand'],
+			content: `<p>${L('text')}</p><div class="fuaoc-picks">${items}</div>`,
+			buttons: [
+				{ action: 'ok', label: L('confirm'), icon: 'fa-solid fa-hand', default: true, callback: (ev, button) => [...button.form.querySelectorAll('input[name=card]:checked')].map((i) => i.value) },
+				{ action: 'cancel', label: L('cancel'), callback: () => null },
+			],
+			rejectClose: false,
+		});
+		if (!Array.isArray(ids)) return;
+		await Deck.setHand(actor, ids);
+		const names = Deck.handCards(actor).map((c) => c.name).join(', ') || '—';
+		await ChatMessage.create({
+			content: `<p><strong>Ace of Cards</strong> — ${game.i18n.localize('FUAOC.GM.log.setHand')}: ${actor.name} (${names})</p>`,
+			whisper: ChatMessage.getWhisperRecipients('GM'),
+		});
+		this.render();
 	}
 
 	static async #toggleMode(event, target) {

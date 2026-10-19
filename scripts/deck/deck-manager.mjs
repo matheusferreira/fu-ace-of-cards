@@ -222,6 +222,50 @@ export async function reclaimToHand(actor, cardIds) {
 	if (fromDeck.length) await s.deck.pass(s.hand, fromDeck, { updateData: { face: 0 }, ...QUIET });
 }
 
+/** Where a card of the actor's deck currently is: 'hand' | 'discard' | 'vanguard' | 'deck'. */
+export function cardLocation(actor, cardId) {
+	const s = getStacks(actor);
+	if (!s) return null;
+	if (s.hand.cards.has(cardId)) return 'hand';
+	if (s.discard.cards.has(cardId)) return 'discard';
+	if (s.vanguard?.cards.has(cardId)) return 'vanguard';
+	return 'deck';
+}
+
+/** Every card of the actor's deck (all 30) in deck order, with its current location and face image. */
+export function allCards(actor) {
+	const s = getStacks(actor);
+	if (!s) return [];
+	return s.deck.cards.contents
+		.sort((a, b) => a.sort - b.sort)
+		.map((c) => ({ id: c.id, name: c.faces?.[0]?.name ?? c.name, img: c.faces?.[0]?.img ?? c.img, joker: !!c.getFlag(MODULE_ID, 'joker'), location: cardLocation(actor, c.id) }));
+}
+
+/**
+ * GM testing tool: make the hand exactly the given cards. Cards leaving the hand go back into the deck;
+ * chosen cards are taken from wherever they are (deck, discard pile or vanguard). The deck is reshuffled.
+ */
+export async function setHand(actor, cardIds) {
+	const s = getStacks(actor);
+	if (!s) return;
+	const wanted = new Set(cardIds);
+	const leaving = s.hand.cards.filter((c) => !wanted.has(c.id)).map((c) => c.id);
+	if (leaving.length) await s.hand.pass(s.deck, leaving, QUIET);
+	const from = { discard: [], vanguard: [], deck: [] };
+	for (const id of cardIds) {
+		const loc = cardLocation(actor, id);
+		if (loc && loc !== 'hand') from[loc].push(id);
+	}
+	const opts = { updateData: { face: 0 }, ...QUIET };
+	if (from.discard.length) await s.discard.pass(s.hand, from.discard, opts);
+	if (from.vanguard.length) await s.vanguard.pass(s.hand, from.vanguard, opts);
+	if (from.deck.length) await s.deck.pass(s.hand, from.deck, opts);
+	// keep the chosen order in the hand window
+	const updates = cardIds.map((id, i) => ({ _id: id, sort: i })).filter((u) => s.hand.cards.has(u._id));
+	if (updates.length) await s.hand.updateEmbeddedDocuments('Card', updates);
+	await s.deck.shuffle(QUIET);
+}
+
 /** Start of a conflict: recall everything, shuffle, draw the starting hand. */
 export async function setupConflict(actor) {
 	const s = getStacks(actor);

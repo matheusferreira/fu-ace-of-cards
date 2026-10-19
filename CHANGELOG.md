@@ -2,6 +2,11 @@
 
 All notable changes to this module. Each release on GitHub uses the section of its version as release notes.
 
+## [0.1.5] - 2026-10-19
+
+### Added
+- **Draw specific hand** (GM panel): a testing tool that shows all 30 cards of a character with their current place (hand, deck, discard, vanguard). Tick the cards that should be in the hand and confirm: unticked hand cards go back into the deck, ticked cards are pulled from wherever they are, and the deck is reshuffled. The change is whispered to the GM in chat. Use it to test sets and Skills without depending on the shuffle.
+
 ## [0.1.4] - 2026-10-19
 
 ### Added

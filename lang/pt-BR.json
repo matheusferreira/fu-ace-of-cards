@@ -57,10 +57,12 @@
     "end": "cartas recolhidas",
     "draw": "comprou 1 carta",
     "recycle": "descarte embaralhado no baralho",
-    "shuffle": "baralho embaralhado"
+    "shuffle": "baralho embaralhado",
+    "setHand": "mão definida pelo mestre"
    },
    "preset": "Arte do baralho",
-   "presetChanged": "Baralho de {name} recriado com a arte nova."
+   "presetChanged": "Baralho de {name} recriado com a arte nova.",
+   "setHand": "Definir mão"
   },
   "Chat": {
    "pending": "Aguardando mestre",
@@ -205,6 +207,16 @@
    "text": "Você descartou um joker. Escolha cartas que não sejam joker no seu descarte para embaralhar de volta no baralho.",
    "confirm": "Embaralhar no baralho",
    "skip": "Pular"
+  },
+  "SetHand": {
+   "title": "Definir mão (Draw specific hand)",
+   "text": "Ferramenta de teste: marque as cartas que devem ficar na mão. Cartas da mão desmarcadas voltam para o baralho; as marcadas saem do baralho, do descarte ou da vanguarda. O baralho é embaralhado.",
+   "confirm": "Definir mão",
+   "cancel": "Cancelar",
+   "hand": "mão",
+   "deck": "baralho",
+   "discard": "descarte",
+   "vanguard": "vanguarda"
   }
  }
 }

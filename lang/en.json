@@ -57,10 +57,12 @@
     "end": "all cards recalled",
     "draw": "drew 1 card",
     "recycle": "discard shuffled into the deck",
-    "shuffle": "deck shuffled"
+    "shuffle": "deck shuffled",
+    "setHand": "hand set by the GM"
    },
    "preset": "Deck art",
-   "presetChanged": "Deck of {name} rebuilt with the new art."
+   "presetChanged": "Deck of {name} rebuilt with the new art.",
+   "setHand": "Draw specific hand"
   },
   "Chat": {
    "pending": "Awaiting GM",
@@ -205,6 +207,16 @@
    "text": "You discarded a joker. Choose any non-joker cards in your discard pile to shuffle into your deck.",
    "confirm": "Shuffle into deck",
    "skip": "Skip"
+  },
+  "SetHand": {
+   "title": "Draw specific hand",
+   "text": "Testing tool: tick the cards that should be in the hand. Unticked hand cards go back into the deck; ticked cards are taken from the deck, discard pile or vanguard. The deck is reshuffled.",
+   "confirm": "Set hand",
+   "cancel": "Cancel",
+   "hand": "hand",
+   "deck": "deck",
+   "discard": "discard",
+   "vanguard": "vanguard"
   }
  }
 }
