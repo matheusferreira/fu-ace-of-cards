@@ -1,7 +1,7 @@
 import { MODULE_ID, TEMPLATES, FUID } from '../constants.mjs';
 import * as Deck from '../deck/deck-manager.mjs';
 import { maxCards, MIN_CARDS, mpCost, computeEffect } from '../rules/sets.mjs';
-import { optionsFor, effectLabel, resolveMagicCards, validate, resolveSwap, swapError } from '../rules/resolution.mjs';
+import { optionsFor, effectLabel, resolveMagicCards, validate, resolveSwap, swapError, canPlaceVanguard, revealVanguard, DAMAGE_TYPES } from '../rules/resolution.mjs';
 import { swapLimit } from '../rules/sets.mjs';
 import { requestGM } from '../socket.mjs';
 
@@ -27,6 +27,7 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			setup: HandApp.#onSetup,
 			mulligan: HandApp.#onMulligan,
 			trapCard: HandApp.#onTrapCard,
+			reveal: HandApp.#onReveal,
 		},
 	};
 
@@ -56,6 +57,8 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.choiceType = null;
 		this.statuses = [];
 		this.trapAction = 'attack';
+		this.vanguardPick = '';
+		this.vanguardType = 'physical';
 	}
 
 	get title() {
@@ -109,6 +112,26 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			canResolve: this.selected.length >= MIN_CARDS && !validate(actor, this.selected),
 			showNoSet: this.selected.length >= MIN_CARDS && !options.length,
 			swap: this.#swapContext(),
+			vanguardPlace: canPlaceVanguard(actor) && this.selected.length
+				? [{ value: '', label: game.i18n.localize('FUAOC.Vanguard.none'), selected: !this.vanguardPick }].concat(
+						this.selected.map((id) => {
+							const c = hand.find((x) => x.id === id);
+							return { value: id, label: c?.name ?? id, selected: this.vanguardPick === id };
+						}),
+					)
+				: null,
+			vanguard: this.#vanguardContext(),
+		};
+	}
+
+	#vanguardContext() {
+		const actor = this.actor;
+		if (!Deck.hasHeroic(actor, FUID.cardVanguard)) return null;
+		const cards = Deck.vanguardCards(actor).map((c) => ({ id: c.id, img: c.faces?.[0]?.img ?? c.img, name: c.faces?.[0]?.name ?? c.name }));
+		return {
+			cards,
+			count: cards.length,
+			types: DAMAGE_TYPES.map((t) => ({ value: t, label: game.i18n.localize(`FU.Damage${t.capitalize()}`), selected: t === this.vanguardType })),
 		};
 	}
 
@@ -134,6 +157,12 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
 	_onRender(context, options) {
 		super._onRender(context, options);
+		this.element.querySelector('select[name=vanguardPick]')?.addEventListener('change', (ev) => {
+			this.vanguardPick = ev.target.value;
+		});
+		this.element.querySelector('select[name=vanguardType]')?.addEventListener('change', (ev) => {
+			this.vanguardType = ev.target.value;
+		});
 		this.element.querySelectorAll('select[name=trapAction]').forEach((el) =>
 			el.addEventListener('change', (ev) => {
 				this.trapAction = ev.target.value;
@@ -187,7 +216,9 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		}
 		const ids = [...this.selected];
 		this.selected = [];
-		await resolveMagicCards(this.actor, ids, chosen, { type: this.choiceType, statuses: this.statuses });
+		const vanguard = ids.includes(this.vanguardPick) ? this.vanguardPick : null;
+		this.vanguardPick = '';
+		await resolveMagicCards(this.actor, ids, chosen, { type: this.choiceType, statuses: this.statuses, vanguard });
 		this.statuses = [];
 		this.render();
 	}
@@ -203,6 +234,11 @@ export class HandApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		const ids = [...this.selected];
 		this.selected = [];
 		await resolveSwap(this.actor, 'trapCard', ids, { action: this.trapAction });
+		this.render();
+	}
+
+	static async #onReveal(event, target) {
+		await revealVanguard(this.actor, target.dataset.cardId, this.vanguardType);
 		this.render();
 	}
 

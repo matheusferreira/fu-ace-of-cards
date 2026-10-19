@@ -72,3 +72,8 @@
 .fuaoc-sethand .fuaoc-suit-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
 .fuaoc-sethand .fuaoc-suit-label { flex: 0 0 70px; font-weight: bold; font-size: 12px; text-align: right; }
 .fuaoc-sethand .fuaoc-suit-row .fuaoc-picks { margin: 0; flex-wrap: nowrap; }
+.fuaoc .fuaoc-vanguard { border-top: 1px solid rgba(0, 0, 0, 0.2); padding-top: 6px; display: flex; flex-direction: column; gap: 6px; }
+.fuaoc .fuaoc-vanguard h4 { margin: 0; font-size: 13px; border: none; }
+.fuaoc .fuaoc-vcard { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.fuaoc .fuaoc-vcard img { width: 64px; filter: brightness(0.85); }
+.fuaoc .fuaoc-vcard button { min-height: 24px; font-size: 11px; padding: 2px 6px; }

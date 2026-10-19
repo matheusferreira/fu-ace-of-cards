@@ -95,6 +95,9 @@ export async function resolveMagicCards(actor, ids, option, choices = {}) {
 
 	const beforeHand = new Set(Deck.handCards(actor).map((c) => c.id));
 	await Deck.discardFromHand(actor, ids);
+	if (choices.vanguard && ids.includes(choices.vanguard) && canPlaceVanguard(actor) && (await Deck.placeVanguard(actor, choices.vanguard))) {
+		parts.push({ kind: 'note', targets: [], label: L('Part.vanguardPlaced') });
+	}
 	const rite = ruleCards.some((c) => c.joker) && Deck.hasHeroic(actor, FUID.forbiddenRite) ? await forbiddenRiteStep(actor) : [];
 	if (rite.length) parts.push({ kind: 'note', targets: [], label: L('Part.forbiddenRite', { count: rite.length }) });
 	await Deck.drawCards(actor, ids.length);
@@ -210,5 +213,42 @@ export async function resolveSwap(actor, kind, ids, choices = {}) {
 	return ChatMessage.create({
 		speaker: ChatMessage.getSpeaker({ actor }),
 		content: `<div class="fuaoc-chat"><header><h3><i class="fa-solid fa-diamond"></i> ${title}</h3></header><ol class="fuaoc-mini">${cardsHtml}</ol><p class="fuaoc-text">${text}</p></div>`,
+	});
+}
+
+/** Card Vanguard: may place a card if the actor has the Skill and two or fewer vanguard cards in play. */
+export function canPlaceVanguard(actor) {
+	return Deck.hasHeroic(actor, FUID.cardVanguard) && !!Deck.getStacks(actor)?.vanguard && Deck.vanguardCards(actor).length <= 2;
+}
+
+export const DAMAGE_TYPES = ['physical', 'air', 'bolt', 'dark', 'earth', 'fire', 'ice', 'light', 'poison'];
+
+/**
+ * Card Vanguard: reveal a vanguard card when a source deals damage of `type` to you and/or allies.
+ * A joker or a card of the matching suit grants Resistance to that type to you and every ally you can see
+ * until the end of the turn. The card then goes on top of the discard pile.
+ */
+export async function revealVanguard(actor, cardId, type) {
+	const card = Deck.vanguardCards(actor).find((c) => c.id === cardId);
+	if (!card) return null;
+	const rule = Deck.toRuleCard(card);
+	const match = rule.joker || rule.suit === type;
+	const img = card.faces?.[0]?.img ?? card.img;
+	const name = card.faces?.[0]?.name ?? card.name;
+	await Deck.revealVanguard(actor, cardId);
+	const typeLabel = game.i18n.localize(`FU.Damage${type.capitalize()}`);
+	if (!match) {
+		return ChatMessage.create({
+			speaker: ChatMessage.getSpeaker({ actor }),
+			content: `<div class="fuaoc-chat"><header><h3><i class="fa-solid fa-shield"></i> Card Vanguard</h3></header><ol class="fuaoc-mini"><li><img src="${img}" alt="" data-tooltip="${name}"></li></ol><p class="fuaoc-text">${L('Vanguard.noMatch', { type: typeLabel })}</p></div>`,
+		});
+	}
+	return createProposal({
+		actor,
+		title: 'Card Vanguard',
+		summary: L('Vanguard.match', { type: typeLabel }),
+		cards: [{ img, name }],
+		parts: [{ kind: 'resistance', type, targets: defaultAllies(actor), label: L('Part.resistance', { type: typeLabel }) }],
+		tags: ['card-vanguard'],
 	});
 }

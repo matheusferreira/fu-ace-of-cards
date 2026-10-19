@@ -108,14 +108,14 @@ export async function setStatuses(targets, statuses, active) {
 }
 
 /** Temporary effect (High or Low): bonuses until the start of the actor's next turn. */
-export async function addTemporaryEffect(actor, { name, img, extraDamage = 0, damageReduction = 0, moduleId }) {
+export async function addTemporaryEffect(actor, { name, img, extraDamage = 0, damageReduction = 0, moduleId, proposal = null }) {
 	const changes = [];
 	const ADD = CONST.ACTIVE_EFFECT_MODES.ADD;
 	if (extraDamage) changes.push({ key: 'system.bonuses.damage.all', mode: ADD, value: String(extraDamage) });
 	if (damageReduction) changes.push({ key: 'system.bonuses.incomingDamage.all', mode: ADD, value: String(-damageReduction) });
 	if (!changes.length) return null;
 	const [effect] = await actor.createEmbeddedDocuments('ActiveEffect', [
-		{ name, img: img ?? 'icons/svg/card-joker.svg', changes, flags: { [moduleId]: { untilTurnStart: true } } },
+		{ name, img: img ?? 'icons/svg/card-joker.svg', changes, flags: { [moduleId]: { untilTurnStart: true, proposal } } },
 	]);
 	return effect;
 }
@@ -123,4 +123,31 @@ export async function addTemporaryEffect(actor, { name, img, extraDamage = 0, da
 export async function clearTemporaryEffects(actor, moduleId) {
 	const ids = actor.effects.filter((e) => e.getFlag(moduleId, 'untilTurnStart')).map((e) => e.id);
 	if (ids.length) await actor.deleteEmbeddedDocuments('ActiveEffect', ids);
+}
+
+/** Card Vanguard: Resistance to one damage type until the end of the current turn. */
+export async function addResistance(actor, type, { name, moduleId, proposal = null }) {
+	const [effect] = await actor.createEmbeddedDocuments('ActiveEffect', [
+		{
+			name: `${name} (${game.i18n.localize(`FU.Damage${type.capitalize()}`)})`,
+			img: 'icons/svg/shield.svg',
+			changes: [{ key: `system.affinities.${type}`, mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM, value: 'upgrade' }],
+			flags: { [moduleId]: { untilTurnEnd: true, proposal } },
+		},
+	]);
+	return effect;
+}
+
+/** Remove Card Vanguard resistances (end of the turn). */
+export async function clearTurnEndEffects(actor, moduleId) {
+	const ids = actor.effects.filter((e) => e.getFlag(moduleId, 'untilTurnEnd')).map((e) => e.id);
+	if (ids.length) await actor.deleteEmbeddedDocuments('ActiveEffect', ids);
+}
+
+/** Revert: remove every effect a given proposal created on these actors. */
+export async function removeProposalEffects(actors, moduleId, proposal) {
+	for (const a of actors) {
+		const ids = a.effects.filter((e) => e.getFlag(moduleId, 'proposal') === proposal).map((e) => e.id);
+		if (ids.length) await a.deleteEmbeddedDocuments('ActiveEffect', ids);
+	}
 }

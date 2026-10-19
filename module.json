@@ -2,7 +2,7 @@
   "id": "fu-ace-of-cards",
   "title": "Fabula Ultima — Ace of Cards",
   "description": "Deck, hand and discard pile for the Ace of Cards class (Bonus Collection vol.1): set recognition, GM-approved automation through projectfu, GM overview.",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "authors": [
     {
       "name": "Atlas da Mesa"
@@ -45,6 +45,6 @@
   "socket": true,
   "url": "https://github.com/matheusferreira/fu-ace-of-cards",
   "manifest": "https://github.com/matheusferreira/fu-ace-of-cards/releases/latest/download/module.json",
-  "download": "https://github.com/matheusferreira/fu-ace-of-cards/releases/download/v0.1.6/module.zip",
+  "download": "https://github.com/matheusferreira/fu-ace-of-cards/releases/download/v0.1.7/module.zip",
   "bugs": "https://github.com/matheusferreira/fu-ace-of-cards/issues"
 }

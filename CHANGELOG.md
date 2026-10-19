@@ -2,6 +2,15 @@
 
 All notable changes to this module. Each release on GitHub uses the section of its version as release notes.
 
+## [0.1.7] - 2026-10-19
+
+### Added
+- **Card Vanguard**: when resolving Magic Cards, a selector lets you place one of the discarded cards face down as a vanguard card (only while you have two or fewer in play). A new Card Vanguard section in the hand window shows your vanguard cards; pick the damage type dealt by the source and reveal one. A joker or a card of the matching suit gives you and your allies Resistance to that type until the end of the turn (a chat proposal, following the GM's status approval mode); the card then goes on top of the discard pile. Vanguard cards return to the deck at the end of the conflict.
+
+### Changed
+- Revert now also removes the effects a proposal created (High or Low bonuses and Card Vanguard resistances).
+- Rejecting a Magic Cards proposal also brings back a card that was placed as a vanguard card.
+
 ## [0.1.6] - 2026-10-19
 
 ### Changed

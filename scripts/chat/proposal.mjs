@@ -153,7 +153,10 @@ export async function applyProposal(messageId) {
 				await Bridge.setStatuses(targets, p.statuses, p.active);
 				break;
 			case 'effect':
-				for (const t of targets) await Bridge.addTemporaryEffect(t, { ...p.effect, moduleId: MODULE_ID });
+				for (const t of targets) await Bridge.addTemporaryEffect(t, { ...p.effect, moduleId: MODULE_ID, proposal: messageId });
+				break;
+			case 'resistance':
+				for (const t of targets) await Bridge.addResistance(t, p.type, { name: data.title, moduleId: MODULE_ID, proposal: messageId });
 				break;
 			default:
 				break;
@@ -182,6 +185,9 @@ export async function revertProposal(messageId) {
 	const data = message?.getFlag(MODULE_ID, FLAGS.proposal);
 	if (!data || data.status !== 'applied' || !data.snapshot) return;
 	await Bridge.restore(data.snapshot);
+	const touched = new Set([data.actorUuid]);
+	for (const p of data.parts) for (const u of p.targets) touched.add(u);
+	await Bridge.removeProposalEffects(await resolveActors([...touched]), MODULE_ID, messageId);
 	await updateMessage(message, { status: 'reverted' });
 }
 

@@ -217,9 +217,34 @@ export async function reclaimToHand(actor, cardIds) {
 	const s = getStacks(actor);
 	if (!s || !cardIds.length) return;
 	const fromDiscard = cardIds.filter((id) => s.discard.cards.has(id));
-	const fromDeck = cardIds.filter((id) => s.deck.cards.has(id));
+	const fromVanguard = cardIds.filter((id) => s.vanguard?.cards.has(id));
+	const fromDeck = cardIds.filter((id) => !s.hand.cards.has(id) && !fromDiscard.includes(id) && !fromVanguard.includes(id) && s.deck.cards.get(id) && !s.deck.cards.get(id).drawn);
 	if (fromDiscard.length) await s.discard.pass(s.hand, fromDiscard, { updateData: { face: 0 }, ...QUIET });
+	if (fromVanguard.length) await s.vanguard.pass(s.hand, fromVanguard, { updateData: { face: 0 }, ...QUIET });
 	if (fromDeck.length) await s.deck.pass(s.hand, fromDeck, { updateData: { face: 0 }, ...QUIET });
+}
+
+/** Card Vanguard: cards currently in play as vanguard cards. */
+export function vanguardCards(actor) {
+	const s = getStacks(actor);
+	return s?.vanguard ? s.vanguard.cards.contents.sort((a, b) => a.sort - b.sort) : [];
+}
+
+/** Card Vanguard: move a just-discarded card from the discard pile to the vanguard, face down. */
+export async function placeVanguard(actor, cardId) {
+	const s = getStacks(actor);
+	if (!s?.vanguard || !s.discard.cards.has(cardId)) return false;
+	await s.discard.pass(s.vanguard, [cardId], { updateData: { face: null }, ...QUIET });
+	return true;
+}
+
+/** Card Vanguard: reveal a vanguard card and put it on top of the discard pile. */
+export async function revealVanguard(actor, cardId) {
+	const s = getStacks(actor);
+	if (!s?.vanguard?.cards.has(cardId)) return false;
+	const top = Math.max(0, ...s.discard.cards.map((c) => c.sort));
+	await s.vanguard.pass(s.discard, [cardId], { updateData: { face: 0, sort: top + 1 }, ...QUIET });
+	return true;
 }
 
 /** Where a card of the actor's deck currently is: 'hand' | 'discard' | 'vanguard' | 'deck'. */

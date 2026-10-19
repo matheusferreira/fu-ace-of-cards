@@ -54,6 +54,11 @@
 				{{else}}
 					{{#if showNoSet}}<p class="fuaoc-hint">{{localize "FUAOC.Hand.noSet"}}</p>{{/if}}
 				{{/if}}
+				{{#if vanguardPlace}}
+					<label class="fuaoc-field">{{localize "FUAOC.Vanguard.place"}}
+						<select name="vanguardPick">{{#each vanguardPlace}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+					</label>
+				{{/if}}
 				{{#if swap}}
 					<div class="fuaoc-swap">
 						<h4>{{localize "FUAOC.Swap.heading"}}</h4>
@@ -79,6 +84,23 @@
 			</section>
 		{{else}}
 			{{#if cards.length}}<p class="fuaoc-hint">{{localize "FUAOC.Hand.pick"}}</p>{{/if}}
+		{{/if}}
+	{{#if vanguard}}
+			<section class="fuaoc-vanguard">
+				<h4><i class="fa-solid fa-shield"></i> Card Vanguard ({{vanguard.count}}/3)</h4>
+				{{#if vanguard.cards.length}}
+					<label class="fuaoc-field">{{localize "FUAOC.Vanguard.incoming"}}
+						<select name="vanguardType">{{#each vanguard.types}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+					</label>
+					<ol class="fuaoc-mini">
+						{{#each vanguard.cards}}
+							<li class="fuaoc-vcard"><img src="{{img}}" alt="{{name}}" data-tooltip="{{name}}"><button type="button" data-action="reveal" data-card-id="{{id}}"><i class="fa-solid fa-eye"></i> {{localize "FUAOC.Vanguard.reveal"}}</button></li>
+						{{/each}}
+					</ol>
+				{{else}}
+					<p class="fuaoc-hint">{{localize "FUAOC.Vanguard.empty"}}</p>
+				{{/if}}
+			</section>
 		{{/if}}
 	{{/unless}}
 </div>

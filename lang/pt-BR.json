@@ -86,7 +86,9 @@
    "duelMaster": "Duel Master: +{dmg} de dano com arma arcane, dagger, firearm, sword ou thrown.",
    "highOrLowHeal": "High or Low: recupera {amount} PV",
    "highOrLow": "High or Low até seu próximo turno: +{dmg} de dano causado, −{red} de dano sofrido",
-   "forbiddenRite": "Forbidden Rite: {count} carta(s) do descarte embaralhada(s) no baralho"
+   "forbiddenRite": "Forbidden Rite: {count} carta(s) do descarte embaralhada(s) no baralho",
+   "vanguardPlaced": "Card Vanguard: 1 carta virada para baixo",
+   "resistance": "Resistência a {type} até o fim do turno"
   },
   "Effect": {
    "none": "Cartas trocadas (sem set)",
@@ -217,6 +219,15 @@
    "deck": "baralho",
    "discard": "descarte",
    "vanguard": "vanguarda"
+  },
+  "Vanguard": {
+   "none": "— todas para o descarte —",
+   "place": "Card Vanguard: deixar virada para baixo",
+   "incoming": "Tipo de dano da fonte",
+   "reveal": "Revelar",
+   "empty": "Nenhuma carta de vanguarda em jogo. Ao resolver Magic Cards, você pode deixar uma das cartas virada para baixo aqui.",
+   "noMatch": "A carta revelada não corresponde ao dano de {type}; ela vai para o descarte sem efeito.",
+   "match": "A carta revelada corresponde: você e todo aliado que você vê ganham Resistência a {type} até o fim do turno."
   }
  }
 }

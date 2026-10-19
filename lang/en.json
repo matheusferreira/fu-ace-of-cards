@@ -86,7 +86,9 @@
    "duelMaster": "Duel Master: +{dmg} damage with arcane, dagger, firearm, sword or thrown weapons.",
    "highOrLowHeal": "High or Low: recover {amount} HP",
    "highOrLow": "High or Low until your next turn: +{dmg} damage dealt, −{red} damage taken",
-   "forbiddenRite": "Forbidden Rite: {count} card(s) shuffled from the discard pile into the deck"
+   "forbiddenRite": "Forbidden Rite: {count} card(s) shuffled from the discard pile into the deck",
+   "vanguardPlaced": "Card Vanguard: 1 card placed face down",
+   "resistance": "Resistance to {type} until the end of the turn"
   },
   "Effect": {
    "none": "Cards cycled (no set)",
@@ -217,6 +219,15 @@
    "deck": "deck",
    "discard": "discard",
    "vanguard": "vanguard"
+  },
+  "Vanguard": {
+   "none": "— keep all in the discard pile —",
+   "place": "Card Vanguard: place face down",
+   "incoming": "Damage type dealt by the source",
+   "reveal": "Reveal",
+   "empty": "No vanguard cards in play. When you resolve Magic Cards, you can place one of the cards face down here.",
+   "noMatch": "The revealed card does not match {type} damage; it goes to the discard pile with no effect.",
+   "match": "Revealed card matches: you and every ally you can see gain Resistance to {type} until the end of the turn."
   }
  }
 }

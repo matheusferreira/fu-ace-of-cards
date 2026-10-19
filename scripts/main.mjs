@@ -105,6 +105,8 @@ Hooks.on('deleteCombat', async (combat) => {
 /* High or Low lasts until the start of the actor's next turn. */
 Hooks.on('updateCombat', async (combat, changes) => {
 	if (!isResponsibleGM() || !('turn' in changes || 'round' in changes)) return;
+	// Card Vanguard resistances last until the end of the turn.
+	for (const c of combat.combatants) if (c.actor) await Bridge.clearTurnEndEffects(c.actor, MODULE_ID);
 	const actor = combat.combatant?.actor;
 	if (!actor) return;
 	await Bridge.clearTemporaryEffects(actor, MODULE_ID);
@@ -113,7 +115,11 @@ Hooks.on('updateCombat', async (combat, changes) => {
 });
 Hooks.on('deleteCombat', async (combat) => {
 	if (!isResponsibleGM()) return;
-	for (const c of combat.combatants) if (c.actor?.getFlag(MODULE_ID, 'trapUsed')) await c.actor.unsetFlag(MODULE_ID, 'trapUsed');
+	for (const c of combat.combatants) {
+		if (!c.actor) continue;
+		if (c.actor.getFlag(MODULE_ID, 'trapUsed')) await c.actor.unsetFlag(MODULE_ID, 'trapUsed');
+		await Bridge.clearTurnEndEffects(c.actor, MODULE_ID);
+	}
 });
 
 /* Re-render windows when any of the module's card stacks change. */

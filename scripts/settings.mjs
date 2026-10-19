@@ -67,6 +67,7 @@ export function modeFor(kind) {
 		case 'recovery':
 			return getSetting(SETTINGS.recoveryMode);
 		case 'status':
+		case 'resistance':
 			return getSetting(SETTINGS.statusMode);
 		case 'mp':
 			return getSetting(SETTINGS.mpMode);
