@@ -69,3 +69,6 @@
 .fuaoc-sethand .loc-hand .fuaoc-loc { background: #c9a54a; color: #1d1a14; }
 .fuaoc-sethand .loc-discard img, .fuaoc-sethand .loc-vanguard img { opacity: 0.7; }
 .fuaoc-sethand .fuaoc-cname { position: absolute; top: 2px; right: 2px; font-size: 10px; font-weight: bold; padding: 0 4px; border-radius: 6px; background: rgba(255, 255, 255, 0.85); color: #1d1a14; }
+.fuaoc-sethand .fuaoc-suit-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.fuaoc-sethand .fuaoc-suit-label { flex: 0 0 70px; font-weight: bold; font-size: 12px; text-align: right; }
+.fuaoc-sethand .fuaoc-suit-row .fuaoc-picks { margin: 0; flex-wrap: nowrap; }

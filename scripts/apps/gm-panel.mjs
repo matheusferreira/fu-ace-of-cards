@@ -136,18 +136,26 @@ export class GMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 		if (!actor || !Deck.getStacks(actor)) return;
 		const L = (k) => game.i18n.localize(`FUAOC.SetHand.${k}`);
 		const cards = Deck.allCards(actor);
-		const items = cards
-			.map(
-				(c) => `<label class="fuaoc-pick loc-${c.location}" data-tooltip="${c.name} · ${L(c.location)}">
+		const pick = (c) => `<label class="fuaoc-pick loc-${c.location}" data-tooltip="${c.name} · ${L(c.location)}">
 					<input type="checkbox" name="card" value="${c.id}" ${c.location === 'hand' ? 'checked' : ''}>
-					<img src="${c.img}" alt=""><span class="fuaoc-cname">${c.name}</span><span class="fuaoc-loc">${L(c.location)}</span></label>`,
-			)
+					<img src="${c.img}" alt=""><span class="fuaoc-cname">${c.name}</span><span class="fuaoc-loc">${L(c.location)}</span></label>`;
+		// One row per suit (A to 7), jokers last
+		const rows = [];
+		for (const c of cards) {
+			if (rows.at(-1)?.suit !== c.suit) rows.push({ suit: c.suit, damage: c.damage, cards: [] });
+			rows.at(-1).cards.push(c);
+		}
+		const items = rows
+			.map((r) => {
+				const label = r.suit === 'joker' ? 'Joker' : `${r.cards[0].name.split(' ').pop()} ${r.damage ? game.i18n.localize(`FU.Damage${r.damage.capitalize()}`) : ''}`;
+				return `<div class="fuaoc-suit-row"><span class="fuaoc-suit-label">${label}</span><div class="fuaoc-picks">${r.cards.map(pick).join('')}</div></div>`;
+			})
 			.join('');
 		const ids = await foundry.applications.api.DialogV2.wait({
 			window: { title: `${L('title')} — ${actor.name}`, resizable: true },
 			position: { width: 760 },
 			classes: ['fuaoc', 'fuaoc-dialog', 'fuaoc-sethand'],
-			content: `<p>${L('text')}</p><div class="fuaoc-picks">${items}</div>`,
+			content: `<p>${L('text')}</p>${items}`,
 			buttons: [
 				{ action: 'ok', label: L('confirm'), icon: 'fa-solid fa-hand', default: true, callback: (ev, button) => [...button.form.querySelectorAll('input[name=card]:checked')].map((i) => i.value) },
 				{ action: 'cancel', label: L('cancel'), callback: () => null },

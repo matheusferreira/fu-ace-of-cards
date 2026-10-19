@@ -1,5 +1,5 @@
 import { MODULE_ID, FLAGS, FUID, HAND_SIZE } from '../constants.mjs';
-import { buildCardData, defaultConfig } from './presets.mjs';
+import { buildCardData, defaultConfig, PRESETS } from './presets.mjs';
 
 const OWN = () => CONST.DOCUMENT_OWNERSHIP_LEVELS;
 const QUIET = { chatNotification: false };
@@ -236,9 +236,20 @@ export function cardLocation(actor, cardId) {
 export function allCards(actor) {
 	const s = getStacks(actor);
 	if (!s) return [];
+	const suitOrder = (PRESETS[getConfig(actor).preset] ?? PRESETS.poker).suits.map((x) => x.key);
+	const rank = (c) => (c.getFlag(MODULE_ID, 'joker') ? 99 : Math.max(0, suitOrder.indexOf(c.suit)));
 	return s.deck.cards.contents
-		.sort((a, b) => a.sort - b.sort)
-		.map((c) => ({ id: c.id, name: c.faces?.[0]?.name ?? c.name, img: c.faces?.[0]?.img ?? c.img, joker: !!c.getFlag(MODULE_ID, 'joker'), location: cardLocation(actor, c.id) }));
+		.sort((a, b) => rank(a) - rank(b) || (a.value ?? 0) - (b.value ?? 0) || a.id.localeCompare(b.id))
+		.map((c) => ({
+			id: c.id,
+			name: c.faces?.[0]?.name ?? c.name,
+			img: c.faces?.[0]?.img ?? c.img,
+			joker: !!c.getFlag(MODULE_ID, 'joker'),
+			suit: c.getFlag(MODULE_ID, 'joker') ? 'joker' : c.suit,
+			damage: c.getFlag(MODULE_ID, 'damage'),
+			value: c.value,
+			location: cardLocation(actor, c.id),
+		}));
 }
 
 /**

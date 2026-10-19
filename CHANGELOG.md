@@ -2,6 +2,11 @@
 
 All notable changes to this module. Each release on GitHub uses the section of its version as release notes.
 
+## [0.1.6] - 2026-10-19
+
+### Changed
+- **Draw specific hand**: cards are now sorted, one row per suit (A to 7, labelled with the suit's damage type) and the jokers last. Each card shows its name in the corner, so specific cards are easy to find.
+
 ## [0.1.5] - 2026-10-19
 
 ### Added
