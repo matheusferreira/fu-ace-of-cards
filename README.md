@@ -15,7 +15,7 @@ A Foundry VTT v13 module for the **Ace of Cards** class from *Fabula Ultima — 
 Paste this manifest URL into **Add-on Modules → Install Module**:
 
 ```
-https://github.com/OWNER/REPO/releases/latest/download/module.json
+https://github.com/matheusferreira/fu-ace-of-cards/releases/latest/download/module.json
 ```
 
 Requires Foundry VTT 13 and projectfu 4.16+.
