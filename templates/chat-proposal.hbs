@@ -1,0 +1,35 @@
+<div class="fuaoc-chat status-{{status}}">
+	<header>
+		<h3><i class="fa-solid fa-diamond"></i> {{title}}</h3>
+		<span class="fuaoc-badge">
+			{{#if isPending}}{{localize "FUAOC.Chat.pending"}}{{/if}}
+			{{#if isApplied}}{{localize "FUAOC.Chat.applied"}}{{/if}}
+			{{#if isRejected}}{{localize "FUAOC.Chat.rejected"}}{{/if}}
+			{{#if isReverted}}{{localize "FUAOC.Chat.reverted"}}{{/if}}
+		</span>
+	</header>
+	{{#if cards.length}}<ol class="fuaoc-mini">{{#each cards}}<li><img src="{{img}}" alt="{{name}}" data-tooltip="{{name}}"></li>{{/each}}</ol>{{/if}}
+	{{#if summary}}<p class="fuaoc-text">{{summary}}</p>{{/if}}
+	{{#if parts.length}}
+		<ul class="fuaoc-parts">
+			{{#each parts}}
+				<li class="part-{{kind}}">
+					<strong>{{label}}</strong>{{#if typeLabel}} · {{typeLabel}}{{/if}}{{#if ignoreResistances}} · {{localize "FUAOC.Chat.ignoreRes"}}{{/if}}
+					{{#if targets.length}}<br><span class="fuaoc-targets">→ {{targetNames}}</span>{{/if}}
+				</li>
+			{{/each}}
+		</ul>
+	{{/if}}
+	{{#if isPending}}
+		<footer class="fuaoc-actions">
+			<button type="button" data-fuaoc-action="approve"><i class="fa-solid fa-check"></i> {{localize "FUAOC.Chat.approve"}}</button>
+			<button type="button" data-fuaoc-action="retarget"><i class="fa-solid fa-crosshairs"></i> {{localize "FUAOC.Chat.retarget"}}</button>
+			<button type="button" data-fuaoc-action="reject"><i class="fa-solid fa-xmark"></i> {{localize "FUAOC.Chat.reject"}}</button>
+		</footer>
+	{{/if}}
+	{{#if isApplied}}
+		<footer class="fuaoc-actions">
+			<button type="button" data-fuaoc-action="revert"><i class="fa-solid fa-rotate-left"></i> {{localize "FUAOC.Chat.revert"}}</button>
+		</footer>
+	{{/if}}
+</div>

@@ -1,0 +1,66 @@
+<div class="fuaoc-body">
+	{{#unless hasStacks}}
+		<p class="fuaoc-empty">{{localize "FUAOC.Hand.noDeck"}}</p>
+		{{#if isGM}}<button type="button" data-action="createDeck"><i class="fa-solid fa-plus"></i> {{localize "FUAOC.Hand.createDeck"}}</button>{{/if}}
+	{{else}}
+		<header class="fuaoc-status">
+			<span class="fuaoc-pill"><i class="fa-solid fa-layer-group"></i> {{localize "FUAOC.Stack.deck"}}: <strong>{{deckCount}}</strong></span>
+			<span class="fuaoc-pill"><i class="fa-solid fa-trash-can"></i> {{localize "FUAOC.Stack.discard"}}: <strong>{{discardCount}}</strong></span>
+			<span class="fuaoc-pill"><i class="fa-solid fa-droplet"></i> PM: <strong>{{mp}}</strong></span>
+			<span class="fuaoc-pill">Magic Cards SL {{sl}} · {{min}}–{{max}} {{localize "FUAOC.Hand.cards"}}</span>
+			{{#if discardTop}}<img class="fuaoc-discard-top" src="{{discardTop}}" alt="" data-tooltip="{{localize 'FUAOC.Hand.discardTop'}}">{{/if}}
+		</header>
+
+		{{#if cards.length}}
+			<ol class="fuaoc-cards">
+				{{#each cards}}
+					<li class="fuaoc-card {{#if selected}}selected{{/if}}" data-action="toggleCard" data-card-id="{{id}}" data-tooltip="{{name}}">
+						<img src="{{img}}" alt="{{name}}">
+						{{#if selected}}<span class="fuaoc-order">{{order}}</span>{{/if}}
+						{{#if joker}}<span class="fuaoc-dmg joker">Joker</span>{{else}}<span class="fuaoc-dmg dmg-{{damage}}">{{damage}}</span>{{/if}}
+					</li>
+				{{/each}}
+			</ol>
+		{{else}}
+			<p class="fuaoc-empty">{{localize "FUAOC.Hand.empty"}}</p>
+			<button type="button" data-action="setup"><i class="fa-solid fa-shuffle"></i> {{localize "FUAOC.Hand.setup"}}</button>
+		{{/if}}
+
+		{{#if selectedCount}}
+			<section class="fuaoc-resolve">
+				<h3>{{localize "FUAOC.Hand.selected" count=selectedCount cost=cost}}</h3>
+				{{#if error}}<p class="fuaoc-error">{{error}}</p>{{/if}}
+				{{#if options.length}}
+					<ul class="fuaoc-options">
+						{{#each options}}
+							<li class="{{#if checked}}checked{{/if}}" data-action="chooseOption" data-key="{{key}}">
+								<i class="fa-regular {{#if checked}}fa-circle-dot{{else}}fa-circle{{/if}}"></i>
+								<strong>{{label}}</strong>
+								<span class="fuaoc-text">{{text}}</span>
+								{{#if jokers}}<span class="fuaoc-jokers">Joker → {{jokers}}</span>{{/if}}
+							</li>
+						{{/each}}
+					</ul>
+					{{#if typeChoices.length}}
+						<label class="fuaoc-field">{{localize "FUAOC.Hand.damageType"}}
+							<select name="type">{{#each typeChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+						</label>
+					{{/if}}
+					{{#if showStatuses}}
+						<fieldset class="fuaoc-field"><legend>{{localize "FUAOC.Hand.chooseTwo"}}</legend>
+							{{#each statuses}}<label><input type="checkbox" name="status" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>{{/each}}
+						</fieldset>
+					{{/if}}
+				{{else}}
+					{{#if showNoSet}}<p class="fuaoc-hint">{{localize "FUAOC.Hand.noSet"}}</p>{{/if}}
+				{{/if}}
+				<footer class="fuaoc-actions">
+					<button type="button" data-action="clear"><i class="fa-solid fa-xmark"></i> {{localize "FUAOC.Hand.clear"}}</button>
+					<button type="button" data-action="resolve" {{#unless canResolve}}disabled{{/unless}}><i class="fa-solid fa-wand-sparkles"></i> {{localize "FUAOC.Hand.resolve"}}</button>
+				</footer>
+			</section>
+		{{else}}
+			{{#if cards.length}}<p class="fuaoc-hint">{{localize "FUAOC.Hand.pick"}}</p>{{/if}}
+		{{/if}}
+	{{/unless}}
+</div>

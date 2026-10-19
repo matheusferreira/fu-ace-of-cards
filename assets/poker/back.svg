@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" width="250" height="350">
+<defs><pattern id="p" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="20" height="20" fill="#2a2f5a"/><rect width="10" height="10" fill="#343a6e"/></pattern></defs>
+<rect x="3" y="3" width="244" height="344" rx="16" fill="#fbf7ee" stroke="#3a3326" stroke-width="3"/>
+<rect x="14" y="14" width="222" height="322" rx="10" fill="url(#p)" stroke="#c9a54a" stroke-width="3"/>
+<circle cx="125" cy="175" r="48" fill="#2a2f5a" stroke="#c9a54a" stroke-width="3"/>
+<text x="125" y="196" font-size="60" text-anchor="middle" fill="#c9a54a">★</text>
+</svg>

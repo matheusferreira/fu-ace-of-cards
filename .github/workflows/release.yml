@@ -1,0 +1,28 @@
+name: Release module
+on:
+  release:
+    types: [published]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set version, manifest and download URLs from the release tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          REPO="${GITHUB_REPOSITORY}"
+          jq --arg v "$VERSION" \
+             --arg url "https://github.com/$REPO" \
+             --arg manifest "https://github.com/$REPO/releases/latest/download/module.json" \
+             --arg download "https://github.com/$REPO/releases/download/$GITHUB_REF_NAME/module.zip" \
+             '.version=$v | .url=$url | .manifest=$manifest | .download=$download' module.json > module.tmp && mv module.tmp module.json
+      - name: Build zip
+        run: zip -r module.zip module.json scripts templates styles lang assets README.md LICENSE
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            module.json
+            module.zip

@@ -1,0 +1,5 @@
+node_modules/
+*.zip
+.DS_Store
+# Table art that is not ours to redistribute (e.g. Final Fantasy deck) lives outside the module.
+ace-of-cards-decks/

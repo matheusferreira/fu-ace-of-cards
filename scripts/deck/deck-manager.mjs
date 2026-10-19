@@ -1,0 +1,232 @@
+import { MODULE_ID, FLAGS, FUID, HAND_SIZE } from '../constants.mjs';
+import { buildCardData, defaultConfig } from './presets.mjs';
+
+const OWN = () => CONST.DOCUMENT_OWNERSHIP_LEVELS;
+const QUIET = { chatNotification: false };
+
+/* -------------------------------------------- */
+/*  Actor helpers                               */
+/* -------------------------------------------- */
+
+/** Find an item on the actor by its projectfu identifier. */
+export function findFeature(actor, fuid) {
+	return actor?.items?.find((i) => i.system?.fuid === fuid) ?? null;
+}
+
+/** Skill Level of a class skill (0 if the actor does not have it). */
+export function skillLevel(actor, fuid) {
+	const item = findFeature(actor, fuid);
+	if (!item) return 0;
+	return Number(item.system?.level?.value ?? 1) || 0;
+}
+
+export function hasHeroic(actor, fuid) {
+	return !!findFeature(actor, fuid);
+}
+
+export function isAce(actor) {
+	return skillLevel(actor, FUID.magicCards) > 0;
+}
+
+export function actorLevel(actor) {
+	return Number(actor?.system?.level?.value ?? 5) || 5;
+}
+
+export function getConfig(actor) {
+	return foundry.utils.mergeObject(defaultConfig(), actor.getFlag(MODULE_ID, FLAGS.actorConfig) ?? {}, { inplace: false });
+}
+
+/* -------------------------------------------- */
+/*  Stacks                                      */
+/* -------------------------------------------- */
+
+/** @returns {{deck:Cards, hand:Cards, discard:Cards, vanguard:Cards}|null} */
+export function getStacks(actor) {
+	const ids = actor?.getFlag(MODULE_ID, FLAGS.actorStacks);
+	if (!ids) return null;
+	const stacks = {
+		deck: game.cards.get(ids.deck),
+		hand: game.cards.get(ids.hand),
+		discard: game.cards.get(ids.discard),
+		vanguard: game.cards.get(ids.vanguard),
+	};
+	if (!stacks.deck || !stacks.hand || !stacks.discard) return null;
+	return stacks;
+}
+
+/** Actors that have an Ace of Cards deck in this world (or at least the Magic Cards skill). */
+export function aceActors() {
+	return game.actors.filter((a) => a.type === 'character' && (isAce(a) || a.getFlag(MODULE_ID, FLAGS.actorStacks)));
+}
+
+function playerOwners(actor) {
+	return game.users.filter((u) => !u.isGM && actor.testUserPermission(u, 'OWNER'));
+}
+
+function ownership(actor, defaultLevel) {
+	const o = { default: defaultLevel };
+	for (const u of playerOwners(actor)) o[u.id] = OWN().OWNER;
+	return o;
+}
+
+async function getFolder() {
+	const name = 'Ace of Cards';
+	let folder = game.folders.find((f) => f.type === 'Cards' && f.getFlag(MODULE_ID, 'root'));
+	if (!folder) folder = await Folder.create({ name, type: 'Cards', color: '#6a3fa0', flags: { [MODULE_ID]: { root: true } } });
+	return folder;
+}
+
+/**
+ * Create the four card stacks of an actor (GM only). Idempotent: existing stacks are reused.
+ * @param {Actor} actor
+ * @param {{rebuild?: boolean}} [options] rebuild = delete the deck's cards and recreate them from the configuration
+ */
+export async function ensureStacks(actor, { rebuild = false } = {}) {
+	if (!game.user.isGM) throw new Error('ensureStacks must run on a GM client');
+	const existing = getStacks(actor);
+	const config = getConfig(actor);
+	const cardData = buildCardData(config, MODULE_ID);
+	if (existing && !rebuild) return existing;
+	if (existing && rebuild) {
+		await existing.deck.recall(QUIET);
+		await existing.deck.deleteEmbeddedDocuments('Card', existing.deck.cards.map((c) => c.id));
+		await existing.deck.createEmbeddedDocuments('Card', cardData);
+		await existing.deck.update({ img: config.images?.back || cardData[0].back.img });
+		return existing;
+	}
+	const folder = await getFolder();
+	const base = (role, type, defaultLevel, extra = {}) => ({
+		name: `${actor.name} — ${game.i18n.localize(`FUAOC.Stack.${role}`)}`,
+		type,
+		folder: folder.id,
+		ownership: ownership(actor, defaultLevel),
+		flags: { [MODULE_ID]: { [FLAGS.stackRole]: role, [FLAGS.stackActor]: actor.uuid } },
+		...extra,
+	});
+	const created = await Cards.createDocuments([
+		base('deck', 'deck', OWN().NONE, { cards: cardData, img: cardData[0].back.img }),
+		base('hand', 'hand', OWN().NONE),
+		base('discard', 'pile', OWN().OBSERVER),
+		base('vanguard', 'pile', OWN().NONE),
+	]);
+	const [deck, hand, discard, vanguard] = created;
+	await actor.setFlag(MODULE_ID, FLAGS.actorStacks, { deck: deck.id, hand: hand.id, discard: discard.id, vanguard: vanguard.id });
+	return { deck, hand, discard, vanguard };
+}
+
+/** Re-apply ownership (after the actor changes owner). GM only. */
+export async function syncOwnership(actor) {
+	const s = getStacks(actor);
+	if (!s) return;
+	await s.deck.update({ ownership: ownership(actor, OWN().NONE) }, { diff: false, recursive: false });
+	await s.hand.update({ ownership: ownership(actor, OWN().NONE) }, { diff: false, recursive: false });
+	await s.discard.update({ ownership: ownership(actor, OWN().OBSERVER) }, { diff: false, recursive: false });
+	if (s.vanguard) await s.vanguard.update({ ownership: ownership(actor, OWN().NONE) }, { diff: false, recursive: false });
+}
+
+/* -------------------------------------------- */
+/*  Card operations                             */
+/* -------------------------------------------- */
+
+/** Convert a Card document to the shape used by the rules engine. */
+export function toRuleCard(card) {
+	const f = card.flags?.[MODULE_ID] ?? {};
+	return { id: card.id, suit: f.joker ? null : f.damage, value: f.joker ? null : card.value, joker: !!f.joker, suitKey: card.suit };
+}
+
+/** Hand cards in display order. */
+export function handCards(actor) {
+	const s = getStacks(actor);
+	return s ? s.hand.cards.contents.sort((a, b) => a.sort - b.sort) : [];
+}
+
+/** Discard pile, oldest first (last element = top). */
+export function discardCards(actor) {
+	const s = getStacks(actor);
+	return s ? s.discard.cards.contents.sort((a, b) => a.sort - b.sort) : [];
+}
+
+/** Shuffle the discard pile back into the deck (book: when the deck runs out). */
+export async function recycleDiscard(actor) {
+	const s = getStacks(actor);
+	if (!s || !s.discard.cards.size) return false;
+	await s.discard.pass(s.deck, s.discard.cards.map((c) => c.id), QUIET);
+	await s.deck.shuffle(QUIET);
+	return true;
+}
+
+/**
+ * Draw cards into the hand. When the deck runs out, shuffle the discard pile into it and keep drawing.
+ * @returns {Promise<number>} cards actually drawn
+ */
+export async function drawCards(actor, number) {
+	const s = getStacks(actor);
+	if (!s || number <= 0) return 0;
+	let remaining = number;
+	let drawn = 0;
+	let recycled = false;
+	while (remaining > 0) {
+		const available = s.deck.availableCards.length;
+		const take = Math.min(available, remaining);
+		if (take > 0) {
+			await s.hand.draw(s.deck, take, { how: CONST.CARD_DRAW_MODES.TOP, updateData: { face: 0 }, ...QUIET });
+			remaining -= take;
+			drawn += take;
+		}
+		if (remaining > 0) {
+			if (recycled || !(await recycleDiscard(actor))) break;
+			recycled = true;
+		}
+	}
+	return drawn;
+}
+
+/** Move cards from the hand to the top of the discard pile, in the given order. */
+export async function discardFromHand(actor, cardIds) {
+	const s = getStacks(actor);
+	if (!s || !cardIds.length) return [];
+	return s.hand.pass(s.discard, cardIds, { action: 'discard', updateData: { face: 0 }, ...QUIET });
+}
+
+/** Undo helper: move specific cards from the discard pile back to the hand. */
+export async function returnToHand(actor, cardIds) {
+	const s = getStacks(actor);
+	if (!s || !cardIds.length) return [];
+	return s.discard.pass(s.hand, cardIds, { updateData: { face: 0 }, ...QUIET });
+}
+
+/** Undo helper: send specific hand cards back to the deck (undrawn), then reshuffle. */
+export async function returnToDeck(actor, cardIds) {
+	const s = getStacks(actor);
+	if (!s || !cardIds.length) return;
+	await s.hand.pass(s.deck, cardIds, QUIET);
+}
+
+/** Start of a conflict: recall everything, shuffle, draw the starting hand. */
+export async function setupConflict(actor) {
+	const s = getStacks(actor);
+	if (!s) return;
+	await s.deck.recall(QUIET);
+	await s.deck.shuffle(QUIET);
+	await drawCards(actor, HAND_SIZE);
+}
+
+/** End of a conflict: shuffle all 30 cards back into the deck. */
+export async function endConflict(actor) {
+	const s = getStacks(actor);
+	if (!s) return;
+	await s.deck.recall(QUIET);
+	await s.deck.shuffle(QUIET);
+}
+
+/** Summary used by the GM panel and the hand window. */
+export function summarize(actor) {
+	const s = getStacks(actor);
+	if (!s) return null;
+	return {
+		deckCount: s.deck.availableCards.length,
+		hand: handCards(actor),
+		discard: discardCards(actor),
+		vanguard: s.vanguard ? s.vanguard.cards.contents : [],
+	};
+}

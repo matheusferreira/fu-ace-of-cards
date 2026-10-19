@@ -1,0 +1,185 @@
+{
+ "FUAOC": {
+  "Preset": {
+   "poker": "Poker deck",
+   "tarot": "Tarot (Rider-Waite)",
+   "finalFantasy": "Final Fantasy (table art)"
+  },
+  "Suit": {
+   "diamonds": "Diamonds",
+   "clubs": "Clubs",
+   "hearts": "Hearts",
+   "spades": "Spades",
+   "swords": "Swords",
+   "pentacles": "Pentacles",
+   "wands": "Wands",
+   "cups": "Cups"
+  },
+  "Stack": {
+   "deck": "Deck",
+   "hand": "Hand",
+   "discard": "Discard pile",
+   "vanguard": "Vanguard"
+  },
+  "Hand": {
+   "title": "Ace of Cards — Hand",
+   "noDeck": "This character has no deck yet. The GM can create it.",
+   "createDeck": "Create deck",
+   "cards": "cards",
+   "discardTop": "Top of the discard pile",
+   "empty": "Your hand is empty. It is dealt when a conflict starts.",
+   "setup": "Shuffle and draw 5",
+   "selected": "{count} card(s) selected · {cost} MP",
+   "damageType": "Damage type",
+   "chooseTwo": "Choose two status effects",
+   "noSet": "These cards form no set: resolving only cycles them.",
+   "clear": "Clear",
+   "resolve": "Resolve (Magic Cards)",
+   "pick": "Click cards in the order you want to discard them.",
+   "noSetTitle": "No set",
+   "noSetConfirm": "Discard these cards and draw the same number without any effect?"
+  },
+  "GM": {
+   "title": "Ace of Cards — GM panel",
+   "modes": "Approval modes",
+   "none": "No character with the Magic Cards skill.",
+   "openHand": "Hand",
+   "setup": "Start conflict",
+   "draw": "Draw 1",
+   "shuffle": "Shuffle deck",
+   "recycle": "Discard → deck",
+   "end": "End conflict",
+   "rebuild": "Rebuild deck",
+   "log": {
+    "create": "deck created",
+    "rebuild": "deck rebuilt",
+    "setup": "shuffled and drew 5",
+    "end": "all cards recalled",
+    "draw": "drew 1 card",
+    "recycle": "discard shuffled into the deck",
+    "shuffle": "deck shuffled"
+   },
+   "preset": "Deck art",
+   "presetChanged": "Deck of {name} rebuilt with the new art."
+  },
+  "Chat": {
+   "pending": "Awaiting GM",
+   "applied": "Applied",
+   "rejected": "Rejected",
+   "reverted": "Reverted",
+   "approve": "Approve",
+   "reject": "Reject",
+   "revert": "Revert",
+   "retarget": "Use my targets",
+   "ignoreRes": "ignores Resistances and Immunities"
+  },
+  "Part": {
+   "mp": "Spend {cost} MP (Magic Cards)",
+   "damage": "{amount} damage",
+   "recoverHP": "Recover {amount} HP",
+   "recoverMP": "Recover {amount} MP",
+   "statusRemove": "Recover from: {list}",
+   "statusInflict": "Suffer: {list}",
+   "freeAttack": "Free attack with an equipped weapon; its damage becomes {type}.",
+   "duelMaster": "Duel Master: +{dmg} damage with arcane, dagger, firearm, sword or thrown weapons.",
+   "highOrLowHeal": "High or Low: recover {amount} HP",
+   "highOrLow": "High or Low until your next turn: +{dmg} damage dealt, −{red} damage taken"
+  },
+  "Effect": {
+   "none": "Cards cycled (no set)",
+   "jackpot": {
+    "name": "Jackpot",
+    "text": "Surrendered PCs present regain consciousness; you and every ally you can see recover 777 HP and 777 MP."
+   },
+   "forbiddenMonarch": {
+    "name": "Forbidden Monarch",
+    "text": "777 damage to every enemy you can see (light if even, dark if odd)."
+   },
+   "magicFlush": {
+    "name": "Magic Flush",
+    "text": "25 + total value damage to every enemy you can see, of the suit's type."
+   },
+   "blindingFlush": {
+    "name": "Blinding Flush",
+    "text": "15 + total value damage to every enemy you can see; light if the highest card is even, dark if odd."
+   },
+   "fullStatus": {
+    "name": "Full Status",
+    "text": "Choose two of dazed, shaken, slow, weak: even highest card heals the group, odd inflicts them on enemies."
+   },
+   "tripleSupport": {
+    "name": "Triple Support",
+    "text": "You and every ally you can see recover HP equal to the total value × 3."
+   },
+   "doubleTrouble": {
+    "name": "Double Trouble",
+    "text": "10 + highest value damage to up to two enemies (target them first)."
+   },
+   "magicPair": {
+    "name": "Magic Pair",
+    "text": "Free attack with an equipped weapon; damage becomes a suit's type."
+   }
+  },
+  "Variant": {
+   "light": "light",
+   "dark": "dark",
+   "even": "even",
+   "odd": "odd",
+   "air": "air",
+   "earth": "earth",
+   "fire": "fire",
+   "ice": "ice"
+  },
+  "Error": {
+   "noSkill": "This character does not have Magic Cards.",
+   "cardCount": "Magic Cards resolves {min} to {max} cards at your Skill Level.",
+   "noMP": "Not enough MP: {cost} needed, {mp} available.",
+   "chooseStatuses": "Choose exactly two status effects."
+  },
+  "Notify": {
+   "noGM": "A GM must be connected.",
+   "noTargets": "Target tokens first.",
+   "noAce": "You have no Ace of Cards character."
+  },
+  "Keybinding": {
+   "openHand": "Open Ace of Cards hand",
+   "openPanel": "Open Ace of Cards GM panel"
+  },
+  "Settings": {
+   "mode": {
+    "approve": "Ask GM approval",
+    "auto": "Apply automatically"
+   },
+   "damageMode": {
+    "name": "Damage to enemies",
+    "hint": "Whether set damage waits for GM approval in chat."
+   },
+   "recoveryMode": {
+    "name": "HP/MP recovery",
+    "hint": "Whether healing waits for GM approval."
+   },
+   "statusMode": {
+    "name": "Status effects and temporary bonuses",
+    "hint": "Whether status changes wait for GM approval."
+   },
+   "mpMode": {
+    "name": "Magic Cards MP cost",
+    "hint": "Charge MP immediately or include it in the proposal."
+   },
+   "approvers": {
+    "name": "Who approves",
+    "hint": "Users allowed to approve, reject and revert proposals.",
+    "gm": "GM only",
+    "assistant": "GM and Assistant GM"
+   },
+   "reactionHints": {
+    "name": "Reaction hints",
+    "hint": "Notify the player when Trap Card or Mulligan can be used."
+   },
+   "autoSetupConflict": {
+    "name": "Automatic conflict setup",
+    "hint": "Shuffle and draw 5 when combat starts; recall all cards when it ends."
+   }
+  }
+ }
+}

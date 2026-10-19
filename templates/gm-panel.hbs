@@ -1,0 +1,52 @@
+<div class="fuaoc-body">
+	<section class="fuaoc-modes">
+		<h3>{{localize "FUAOC.GM.modes"}}</h3>
+		<div class="fuaoc-mode-list">
+			{{#each modes}}
+				<button type="button" class="fuaoc-mode {{#if auto}}auto{{/if}}" data-action="toggleMode" data-key="{{key}}">
+					<span>{{label}}</span>
+					<strong>{{#if auto}}{{localize "FUAOC.Settings.mode.auto"}}{{else}}{{localize "FUAOC.Settings.mode.approve"}}{{/if}}</strong>
+				</button>
+			{{/each}}
+		</div>
+	</section>
+
+	{{#unless actors.length}}<p class="fuaoc-empty">{{localize "FUAOC.GM.none"}}</p>{{/unless}}
+	{{#each actors}}
+		<article class="fuaoc-actor" data-actor-id="{{id}}">
+			<header>
+				<img class="fuaoc-portrait" src="{{img}}" alt="">
+				<div>
+					<h3>{{name}}</h3>
+					<span class="fuaoc-pill">Magic Cards SL {{sl}}</span>
+					<select name="preset" data-tooltip="{{localize 'FUAOC.GM.preset'}}">{{#each presets}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+					<span class="fuaoc-pill">PM {{mp}}</span>
+					{{#if hasStacks}}
+						<span class="fuaoc-pill">{{localize "FUAOC.Stack.deck"}} {{deckCount}}</span>
+						<span class="fuaoc-pill">{{localize "FUAOC.Stack.discard"}} {{discardCount}}</span>
+						<span class="fuaoc-pill">{{localize "FUAOC.Stack.vanguard"}} {{vanguardCount}}</span>
+					{{/if}}
+				</div>
+			</header>
+			{{#if hasStacks}}
+				<div class="fuaoc-row">
+					<ol class="fuaoc-mini">{{#each hand}}<li><img src="{{img}}" alt="{{name}}" data-tooltip="{{name}}"></li>{{/each}}</ol>
+					{{#if discardTop}}<img class="fuaoc-discard-top" src="{{discardTop}}" alt="" data-tooltip="{{localize 'FUAOC.Hand.discardTop'}}">{{/if}}
+				</div>
+				<footer class="fuaoc-actions">
+					<button type="button" data-action="openHand"><i class="fa-solid fa-diamond"></i> {{localize "FUAOC.GM.openHand"}}</button>
+					<button type="button" data-action="setup"><i class="fa-solid fa-play"></i> {{localize "FUAOC.GM.setup"}}</button>
+					<button type="button" data-action="draw"><i class="fa-solid fa-plus"></i> {{localize "FUAOC.GM.draw"}}</button>
+					<button type="button" data-action="shuffle"><i class="fa-solid fa-shuffle"></i> {{localize "FUAOC.GM.shuffle"}}</button>
+					<button type="button" data-action="recycle"><i class="fa-solid fa-recycle"></i> {{localize "FUAOC.GM.recycle"}}</button>
+					<button type="button" data-action="end"><i class="fa-solid fa-stop"></i> {{localize "FUAOC.GM.end"}}</button>
+					<button type="button" data-action="rebuild"><i class="fa-solid fa-rotate"></i> {{localize "FUAOC.GM.rebuild"}}</button>
+				</footer>
+			{{else}}
+				<footer class="fuaoc-actions">
+					<button type="button" data-action="create"><i class="fa-solid fa-plus"></i> {{localize "FUAOC.Hand.createDeck"}}</button>
+				</footer>
+			{{/if}}
+		</article>
+	{{/each}}
+</div>
