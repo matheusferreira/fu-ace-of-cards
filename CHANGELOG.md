@@ -2,7 +2,7 @@
 
 All notable changes to this module. Each release on GitHub uses the section of its version as release notes.
 
-## [Unreleased]
+## [0.1.10] - 2026-11-11
 
 - Trap Card becomes available again when ProjectFU starts the character's next turn.
 - Enemy Attack, Objective, Skill and Spell chat cards now trigger a private reminder listing eligible cards in the hand, including jokers, while Trap Card is available.
