@@ -4,7 +4,54 @@ import { doubleOrNothingValue } from '../rules/sets.mjs';
  * Every call falls back to plain document updates if the system modules cannot be loaded.
  */
 const BASE = '/systems/projectfu/module';
+const SYSTEM = 'projectfu';
 let mods = null;
+
+/** ProjectFU chooses a combatant separately from advancing the turn counter. */
+export function onTurnStart(callback) {
+	Hooks.on('projectfu.events.combat', (event) => {
+		if (event.type === 'FU.StartOfTurn' && event.actor) return callback(event.actor);
+	});
+}
+
+/** In ProjectFU 4.16 the Objective button opens an otherwise unmarked attribute check. */
+export async function tagObjectiveChecks() {
+	const [{ ActionHandler }, { CheckPrompt }] = await Promise.all([
+		import(`${BASE}/helpers/action-handler.mjs`),
+		import(`${BASE}/checks/check-prompt.mjs`),
+	]);
+	ActionHandler.prototype.objective = function () {
+		return CheckPrompt.attributeCheck(this.actor, {
+			checkCallback: (check) => { check.additionalData.ruleDefinedAction = 'objective'; },
+		});
+	};
+}
+
+/** Recognize action cards by the system's check and item data, independent of chat language. */
+export async function readAction(message) {
+	const check = message.getFlag(SYSTEM, 'Check');
+	if (!check?.id || !check.actorUuid || check.additionalData?.reroll) return null;
+
+	const explicit = check.additionalData?.ruleDefinedAction;
+	if (explicit) {
+		return ['attack', 'objective', 'skill', 'spell'].includes(explicit) ? { check, action: explicit } : null;
+	}
+
+	const item = check.itemUuid ? await fromUuid(check.itemUuid) : null;
+	let action;
+	switch (item?.type) {
+		case 'spell': action = 'spell'; break;
+		case 'skill':
+		case 'heroic':
+		case 'miscAbility': action = 'skill'; break;
+		case 'basic':
+		case 'weapon':
+		case 'customWeapon': action = 'attack'; break;
+		default:
+			if (!check.itemUuid && check.type === 'accuracy') action = 'attack';
+	}
+	return action ? { check, action } : null;
+}
 
 async function load() {
 	if (mods) return mods;

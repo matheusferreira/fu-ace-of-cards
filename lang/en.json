@@ -184,7 +184,7 @@
    },
    "reactionHints": {
     "name": "Reaction hints",
-    "hint": "Notify the player when Trap Card or Mulligan can be used."
+    "hint": "Notify the player in chat when they can use Trap Card."
    },
    "autoSetupConflict": {
     "name": "Automatic conflict setup",
@@ -197,7 +197,8 @@
    "trapHint": "After an enemy you can see resolves an action: discard up to {max} matching cards or jokers, draw that many, then cast a spell for free.",
    "after": "after enemy",
    "drew": "Discarded and drew {count} card(s).",
-   "trapSpell": "Trap Card (enemy {action}): you may now perform the Spell action for free, casting spells with a total MP cost of up to {mp} (you still pay the MP)."
+   "trapSpell": "Trap Card (enemy {action}): you may now perform the Spell action for free, casting spells with a total MP cost of up to {mp} (you still pay the MP).",
+   "trapAvailable": "{enemy} used {action}. You can discard up to {max} of the cards below:"
   },
   "Action": {
    "attack": "Attack",

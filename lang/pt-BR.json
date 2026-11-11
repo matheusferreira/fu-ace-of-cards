@@ -184,7 +184,7 @@
    },
    "reactionHints": {
     "name": "Avisos de reação",
-    "hint": "Avisar o jogador quando Trap Card ou Mulligan puderem ser usados."
+    "hint": "Avisar o jogador no chat quando ele puder usar Trap Card."
    },
    "autoSetupConflict": {
     "name": "Preparar conflito automaticamente",
@@ -197,7 +197,8 @@
    "trapHint": "Depois que um inimigo que você vê resolve uma ação: descarte até {max} cartas do naipe correspondente ou jokers, compre o mesmo número e conjure uma magia de graça.",
    "after": "após inimigo usar",
    "drew": "Descartou e comprou {count} carta(s).",
-   "trapSpell": "Trap Card ({action} inimigo): você pode realizar a ação Magia de graça, conjurando magias com custo total de até {mp} PM (o PM ainda é pago)."
+   "trapSpell": "Trap Card ({action} inimigo): você pode realizar a ação Magia de graça, conjurando magias com custo total de até {mp} PM (o PM ainda é pago).",
+   "trapAvailable": "{enemy} usou {action}. Você pode descartar até {max} das cartas abaixo:"
   },
   "Action": {
    "attack": "Ataque",

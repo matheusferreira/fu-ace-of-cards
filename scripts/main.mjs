@@ -3,6 +3,7 @@ import { registerSettings, getSetting, SETTINGS } from './settings.mjs';
 import { initSocket, registerHandler, requestGM } from './socket.mjs';
 import * as Deck from './deck/deck-manager.mjs';
 import * as Proposal from './chat/proposal.mjs';
+import { onEnemyAction } from './chat/trap-card.mjs';
 import * as Bridge from './bridge/projectfu-bridge.mjs';
 import { HandApp, handActorForUser } from './apps/hand-app.mjs';
 import { GMPanel } from './apps/gm-panel.mjs';
@@ -54,6 +55,7 @@ async function actorFrom(data) {
 
 Hooks.once('ready', () => {
 	initSocket();
+	Bridge.tagObjectiveChecks().catch((error) => console.warn(`${MODULE_ID} | Could not tag Objective checks`, error));
 	registerHandler('ensureStacks', async (data) => {
 		await Deck.ensureStacks(await actorFrom(data));
 		return true;
@@ -103,16 +105,16 @@ Hooks.on('deleteCombat', async (combat) => {
 	}
 	GMPanel.refresh();
 });
-/* High or Low lasts until the start of the actor's next turn. */
+/* ProjectFU's turn starts when a combatant is selected, even if round and turn did not change. */
+Bridge.onTurnStart(async (actor) => {
+	if (!isResponsibleGM()) return;
+	if (actor.getFlag(MODULE_ID, 'trapUsed')) await actor.unsetFlag(MODULE_ID, 'trapUsed');
+	await Bridge.clearTemporaryEffects(actor, MODULE_ID);
+});
 Hooks.on('updateCombat', async (combat, changes) => {
 	if (!isResponsibleGM() || !('turn' in changes || 'round' in changes)) return;
 	// Card Vanguard resistances last until the end of the turn.
 	for (const c of combat.combatants) if (c.actor) await Bridge.clearTurnEndEffects(c.actor, MODULE_ID);
-	const actor = combat.combatant?.actor;
-	if (!actor) return;
-	await Bridge.clearTemporaryEffects(actor, MODULE_ID);
-	// Trap Card can be used again from the start of the actor's next turn.
-	if (actor.getFlag(MODULE_ID, 'trapUsed')) await actor.unsetFlag(MODULE_ID, 'trapUsed');
 });
 Hooks.on('deleteCombat', async (combat) => {
 	if (!isResponsibleGM()) return;
@@ -144,6 +146,10 @@ Hooks.on('updateActor', (actor) => {
 });
 
 Hooks.on('renderChatMessageHTML', Proposal.onRenderChatMessage);
+Hooks.on('createChatMessage', (message) => {
+	if (!isResponsibleGM() || !getSetting(SETTINGS.reactionHints)) return;
+	return onEnemyAction(message).catch((error) => console.warn(`${MODULE_ID} | Trap Card reminder failed`, error));
+});
 
 /* Buttons in the Cards sidebar and in the token controls. */
 Hooks.on('renderCardsDirectory', (app, html) => {
